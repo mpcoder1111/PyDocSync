@@ -1,0 +1,36 @@
+{
+  "benchmark_version": "1.0.0",
+  "evaluation_date": "2026-08-29",
+  "corpora": [
+    {
+      "repository_id": "dulwich",
+      "name": "Dulwich",
+      "upstream_url": "https://github.com/jelmer/dulwich",
+      "pinned_commit": "v0.21.7",
+      "license": "Apache-2.0 OR GPL-2.0-or-later",
+      "archetype": "Git object storage and network protocol parser",
+      "module_sample": "dulwich_pack.py",
+      "symbol_count": 21
+    },
+    {
+      "repository_id": "janome",
+      "name": "Janome",
+      "upstream_url": "https://github.com/mocobeta/janome",
+      "pinned_commit": "v0.5.0",
+      "license": "Apache-2.0",
+      "archetype": "Morphological analysis, trie dictionary, tokenization",
+      "module_sample": "janome_tokenizer.py",
+      "symbol_count": 20
+    },
+    {
+      "repository_id": "python_sdb",
+      "name": "python-sdb",
+      "upstream_url": "https://github.com/williballenthin/python-sdb",
+      "pinned_commit": "v0.1.0",
+      "license": "Apache-2.0",
+      "archetype": "Binary struct unpacking and bitwise database parsing",
+      "module_sample": "sdb_struct.py",
+      "symbol_count": 20
+    }
+  ]
+}

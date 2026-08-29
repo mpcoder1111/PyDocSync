@@ -1,0 +1,115 @@
+{
+  "fingerprint_algorithm": "sha256",
+  "pydocsync_version": "0.2.0",
+  "schema_version": 1,
+  "symbols": {
+    "BaselineManager": {
+      "api": "43c4db0db42bcdaf24acbd04bc1046823f0a56402315763d2c47bfe7dd05b5f6",
+      "code": "fb16e6fa9d8d82bbbd041bd7c3d8a2bcc294f009fc0ffafe6b25c2044bae96db",
+      "doc": "59d5a744e5f5a531241e44317c14a53902f25451cbcaed33930a1cac8fc67f96",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.075288+00:00",
+      "raise_detail": "f683898169d845582945e9871a1a3fdcd1b1d01205d11d37190ed84c483a7b41",
+      "raise_type": "b6276ba72bbc508431b11298180ac724c3eef76599d6862ff5914355b7524739",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "BaselineManager.__init__": {
+      "api": "0760d8c98d4fed40ce5db4b1b59320e4f7680b4217cbe7a9e993a20f345febff",
+      "code": "46ca1ef880d399c33aee263f89398670480549b06105e48f0c3d8fcb2e94d2e0",
+      "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.075288+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "ad9798dd6efd5c54192ed936aeb1d471401c4b1d2214c0a7717059954458e4dc"
+    },
+    "BaselineManager._get_baseline_path": {
+      "api": "a229feb9804614d0130b9cf1705133710c8737f492142be199d3dcba18aac160",
+      "code": "8195000a86122e219551dd4d260b30c868f823b4ebb35849f6b989b5c759bc61",
+      "doc": "ec246685c65f361ea60a511b08a06df8b5ca54744affa431daaa3835b83972b8",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.075288+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "08c5498faa7bbce258e68c70b86f7d202797ea0b5b56f6940b6160bf0c9a32c9"
+    },
+    "BaselineManager.load_module_baseline": {
+      "api": "a229feb9804614d0130b9cf1705133710c8737f492142be199d3dcba18aac160",
+      "code": "748bc6e2782bef302f3529a0911b17d09d1b49ce4878ac83409f1d24bf012b5e",
+      "doc": "04d4537635fbea9175b49ba2f24e8b02afc82736ba71af5b8efd9b83fed3d101",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.075288+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "afb7c3514ce15b4de8647fbf9d5cd4bcc5f9d58130e0de3a076086c364fcdf27"
+    },
+    "BaselineManager.record_symbol_baseline": {
+      "api": "9c625f37676599069a213a4d32fea3749f245a4106621972dd1201ae83f78b9e",
+      "code": "54661e736946a90d06852ba440550a115502071ff21f3a033397a789a6e1141b",
+      "doc": "fab5fd512a9691692686b3ec907fc9a8c3e4669e231a4c02b2ff4b6699b6d94b",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.079413+00:00",
+      "raise_detail": "f683898169d845582945e9871a1a3fdcd1b1d01205d11d37190ed84c483a7b41",
+      "raise_type": "b6276ba72bbc508431b11298180ac724c3eef76599d6862ff5914355b7524739",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "a9da327280d01b3fb988d0655f628f0f1f4108514654fb39a0c4b7ec879725de"
+    },
+    "BaselineManager.save_module_baseline": {
+      "api": "7000bb838ccd17ecf98bdd1b91ff40dbd3b709de7933bfe9228581b5304d1139",
+      "code": "be8997c9bace1f69b2fea06574a951b750e70c82f38e79af5fd79234fe6cb58d",
+      "doc": "84e50fb415767584d9f9885e3659b02587bd3fa8708a61e91cdb57f858415676",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.078296+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "b260590c3664c55ce1f04459ca5fc1726c4a809a6b92b1a811b876b4fe7ccb16"
+    },
+    "BaselineRecord": {
+      "api": "26ebf78096492e7db426abd0c7adfa647223ff1857be7b9975f05a6954060d4c",
+      "code": "69a78ba69984e41316c54a5e307afa97ceb0b7da7e71a73db043eb275eab338c",
+      "doc": "6b81b2732946c043d126aaea4818f42bf600e7f970dbd28c72b67f1666d17c10",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.069900+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "BaselineRecord.from_dict": {
+      "api": "a99d39c9c9196950fc643f4ae83948b8f53eeec35b1bb475ca5d35daebb41668",
+      "code": "555d77c728d85276cf6287be113419018d2119dac5440af3168e09d750873652",
+      "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.073952+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "df057d4440d22154f726cf23c2b907d29dbc7196eaf818edf168a8e3e7412a6c"
+    },
+    "BaselineRecord.to_dict": {
+      "api": "c762e2cac00210b9691a710af1fdf78d862c505b65c392219bc09dd3fbcca56e",
+      "code": "8978377d1ef07924246a17c96a73763170336b1d00e1b33b89da783f7f2e4e67",
+      "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.071401+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "d6b398f942b18c4b33dc286f1cfbcfc69ab3300d4913069620ac5d4c30c7f825"
+    }
+  }
+}

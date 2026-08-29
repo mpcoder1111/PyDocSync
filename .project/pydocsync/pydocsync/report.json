@@ -1,0 +1,31 @@
+{
+  "fingerprint_algorithm": "sha256",
+  "pydocsync_version": "0.2.0",
+  "schema_version": 1,
+  "symbols": {
+    "SyncFailure": {
+      "api": "1488584398bda15f540567e5bf4e3d49aec98470fdec485450c70cd7af06ef05",
+      "code": "4505ee96d6859b9b38f8fb50326ab9474af8b6b152544dc84f0f1ce6294af4b0",
+      "doc": "fe77a93b737e6dd8764d0ff9915a9b2ac284082e8677439b771e4ecd4a9b96e1",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.145957+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "format_pydocsync001_report": {
+      "api": "3064f18baf95763815c8de55eeeab6968f44b245c4c7b4f228175b891ae09c4b",
+      "code": "d3db5f4ccf402db6912c263967e8036df717e474a684020a6c6759aac51a5dd9",
+      "doc": "94223510e658f422644772c792f8f80078af5540e28a43474c943a1e8452bda2",
+      "example": null,
+      "last_reviewed_at": "2026-08-29T18:21:47.147737+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "934bead5b6cb493af1435a357aeefd3368453eb0fcc71d95951e9507fbccfbe7"
+    }
+  }
+}
