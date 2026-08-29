@@ -1,0 +1,87 @@
+{
+  "_schema": {
+    "version": "1.0.0",
+    "project": "PyDocSync",
+    "description": "Coding standards and architectural patterns for PyDocSync: Deterministic code-documentation synchronization for Python codebases using the standard library only.",
+    "last_updated": "2026-08-30",
+    "companion_standards": {
+      "readme_standards_plan": ".specify/memory/standards/readme_standards_plan.json",
+      "readme_standards_plan_note": "Rules for writing Specifications (spec.md), Implementation Plans (plan.md), and Architecture Notes (ideas/arch_*.md). Future tense, Status field required, freeze on ship.",
+      "readme_standards_shipped": ".specify/memory/standards/readme_standards_shipped.json",
+      "readme_standards_shipped_note": "Rules for Module READMEs and Agent Quick Reference Cards.",
+      "constitution": ".specify/memory/constitution.md",
+      "constitution_note": "Project governance and core invariants. In case of conflict, constitution wins over this file."
+    },
+    "spec_kit_templates": {
+      "note": "spec-kit provides standard layouts for its own artifacts. Do NOT write these manually — use the slash commands.",
+      "specification": ".specify/templates/spec-template.md — use /speckit-specify",
+      "implementation_plan": ".specify/templates/plan-template.md — use /speckit-plan",
+      "tasks": ".specify/templates/tasks-template.md — use /speckit-tasks",
+      "checklist": ".specify/templates/checklist-template.md — use /speckit-checklist"
+    }
+  },
+  "_task_index": {
+    "writing_new_python_module": {
+      "read_first": [
+        "module_structure.pydocsync_library",
+        "type_annotations",
+        "docstring_standards"
+      ],
+      "note": "Every new module must have a standard four-part header docstring (WHAT IS THIS?, WHY DO WE NEED THIS?), full type annotations, and Google-style docstrings."
+    },
+    "writing_classifier_rule": {
+      "read_first": [
+        "classifier_patterns.rule_interface",
+        "ast_normalization_invariants",
+        "testing_discipline.scoped_gate"
+      ],
+      "note": "Rules must implement the standard ClassifierRule protocol, produce deterministic ChangeCategory outputs, and route unresolvable cases to UNKNOWN with review_required=True."
+    },
+    "writing_test_file": {
+      "read_first": [
+        "testing_discipline.scoped_gate",
+        "testing_patterns.pytest_standards"
+      ],
+      "note": "Use pytest strictly with the local virtual environment (.venv). Never use arbitrary sleep calls; test empirical behavioral falsification."
+    },
+    "updating_baseline_schema": {
+      "read_first": [
+        "baseline_schema_rules.schema_versioning",
+        "backward_compatibility"
+      ],
+      "note": "Baseline lockfiles must use top-level envelope schema_version: 1 and support fallback deserialization for legacy flat formats."
+    }
+  },
+  "module_structure": {
+    "pydocsync_library": {
+      "header_docstring_format": "Must include WHAT IS THIS? and WHY DO WE NEED THIS? sections.",
+      "zero_dependencies_rule": "Strictly Python standard library only (ast, json, hashlib, dataclasses, pathlib, argparse). Zero external runtime dependencies allowed."
+    }
+  },
+  "type_annotations": {
+    "syntax": "Python 3.10+ native syntax (e.g. str | None, list[dict[str, Any]]). Do not import Optional, Union, List, Dict from typing.",
+    "py_typed_marker": "The package root pydocsync/ must contain a py.typed marker file."
+  },
+  "docstring_standards": {
+    "format": "Google Style docstrings on all public functions, classes, and methods.",
+    "parameters": "Document Args, Returns, and Raises explicitly. Do not duplicate type hints in docstring parameter signatures."
+  },
+  "testing_discipline": {
+    "scoped_gate": {
+      "rule": "During development, run pytest targeting only the modified test module (e.g. ./.venv/Scripts/pytest.exe tests/test_classifier.py).",
+      "full_suite_rule": "Run the entire test suite before marking any SDD feature or task converged."
+    }
+  },
+  "classifier_patterns": {
+    "rule_interface": {
+      "protocol": "Must evaluate RepresentationDiff and return ImpactClassification (HIGH_IMPACT, CANDIDATE_LOW_IMPACT, UNKNOWN).",
+      "fail_safe_rule": "If dynamic mutation, aliasing, or unhandled AST nodes prevent deterministic safety evaluation, classify as UNKNOWN with review_required=True."
+    }
+  },
+  "baseline_schema_rules": {
+    "schema_versioning": {
+      "envelope": "{\n  \"schema_version\": 1,\n  \"pydocsync_version\": \"0.2.0\",\n  \"fingerprint_algorithm\": \"sha256\",\n  \"symbols\": {}\n}",
+      "validation": "pydocsync accept must reject whitespace-only or blank reasons with exit code 2, and non-existent symbols with exit code 1."
+    }
+  }
+}

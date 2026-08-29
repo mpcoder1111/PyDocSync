@@ -1,0 +1,395 @@
+{
+  "_schema": {
+    "version": "2.0.1",
+    "kind": "module_readme",
+    "description": "Standards for writing and updating Module READMEs in Forms Portal — documents for code that already exists and is running. Covers Django app READMEs (form_builder, form_respondent, etc.) and forms_toolkit/ module READMEs. These are LIVING DOCUMENTS that must stay in sync with the code they describe.",
+    "last_updated": "2026-05-15",
+    "companion_standards": {
+      "readme_standards_plan": ".specify/memory/standards/readme_standards_plan.json — for Feature Specifications, Implementation Plans, and Architecture Notes",
+      "coding_standards": ".specify/memory/standards/coding_standards.json — Python module structure and quality",
+      "constitution": ".specify/memory/constitution.md — Principle VII: Documentation Lifecycle"
+    }
+  },
+
+  "_usage": {
+    "_note_to_agent": "READ THIS BLOCK FIRST. It tells you whether this file applies to the README you are about to write or edit.",
+
+    "applies_to": [
+      "Django app READMEs: <app_name>/README.md — e.g. form_builder/README.md, form_respondent/README.md",
+      "forms_toolkit module READMEs: forms_toolkit/<module>/README_<module>.md",
+      "Any README documenting code that is ALREADY RUNNING"
+    ],
+
+    "use_when": [
+      "Writing a README for a Django app whose views, models, and services are already implemented",
+      "Writing a README for a forms_toolkit/ module that is already tested and passing",
+      "Updating an existing Module README because the code it documents changed (bug fix, new feature, refactor)",
+      "Adding mermaid diagrams to a README for shipped code"
+    ],
+
+    "do_not_use_when": [
+      "Writing a Feature Specification or Implementation Plan for UNIMPLEMENTED work — use .specify/memory/standards/readme_standards_plan.json instead",
+      "Writing an Architecture Note (ideas/arch_*.md) — use readme_standards_plan.json",
+      "Writing a tasks.md file — that is managed by spec-kit /speckit-tasks"
+    ],
+
+    "core_distinction_from_plan": "A Module README is under a MAINTENANCE CONTRACT: when the code changes, this README must change in the SAME commit. A plan-stage document is a time-bounded design artifact that gets frozen at ship time. If you cannot maintain a Module README in sync with the code, delete the stale content — do not leave lies.",
+
+    "why_this_file_exists": "spec-kit provides templates for spec.md and plan.md but NOT for Module READMEs. This file is the quality rulebook for all shipped-code documentation — it enforces present-tense voice, maintenance contract, mermaid rules, and the Quick Reference Card that makes READMEs agent-navigable."
+  },
+
+  "readme_header": {
+    "description": "Every Module README must have a consistent header block at the top.",
+    "required_fields": [
+      "# <ModuleName> — <Short tagline>   (H1 — document title, one per file)",
+      "## <Subtitle line>                 (H2 — optional second title line)",
+      "**Last updated:** YYYY-MM-DD (vN.N)   (update every time the file changes; bump inline version)",
+      "**Last git commit:** YYYY-MM-DD        (last commit that touched this module's source code)"
+    ],
+    "rules": [
+      "The H1 title is the only H1 in the entire file",
+      "All major sections use H2 (##); subsections use H3 (###); rarely H4",
+      "**Last updated** MUST be updated whenever any section changes",
+      "**Last git commit** MUST be filled by running: git log -1 --format='%Y-%m-%d' -- <module_path>/",
+      "Date format: YYYY-MM-DD",
+      "Include an 'Agent note' callout immediately after the header block citing the applicable standards file: .specify/memory/standards/readme_standards_shipped.json"
+    ],
+    "example": [
+      "# forms_toolkit.validator — Field Validation Engine",
+      "",
+      "## Pure-Python validation for all Forms Portal field types",
+      "",
+      "**Last updated:** 2026-05-14 (v1.0)",
+      "**Last git commit:** 2026-05-14",
+      "",
+      "> **Agent note:** This is a Module README documenting shipped code. When editing, follow `.specify/memory/standards/readme_standards_shipped.json`.",
+      "> For plan-stage documents, use `.specify/memory/standards/readme_standards_plan.json`.",
+      "",
+      "---"
+    ]
+  },
+
+  "index_section": {
+    "description": "Every Module README must have an Index section immediately after the header block.",
+    "position": "First section after the opening --- divider",
+    "heading": "## Index",
+    "format": "Markdown table with columns: # | Section | Summary",
+    "rules": [
+      "Row 0 is always the Agent Quick Reference Card — label it 'Start here'",
+      "Row numbers match the order sections appear in the document",
+      "Each row links to the section anchor using markdown link syntax: [Label](#anchor)",
+      "Anchor format: GitHub Flavored Markdown (lowercase, spaces to hyphens, remove non-alphanumeric except hyphens)",
+      "Summary column: ONE CONCISE LINE — no full paragraphs"
+    ]
+  },
+
+  "quick_reference_card": {
+    "description": "REQUIRED for all Module READMEs. A dense agent speed-reading section that covers 80% of tasks in ~20-50 lines.",
+    "heading": "## Agent Quick Reference Card",
+    "position": "Immediately after the Index section, before section 1",
+    "required_subsections": [
+      "Opening blockquote — 'Read this first' + link back to Index",
+      "### Public API — import statements + function/endpoint table (signature or URL, return type, use case)",
+      "### Key Constants — any constants that must never be changed, with inline warning comment",
+      "### Consumers — table of files that import from or call this module and what they use",
+      "### Hard Rules — numbered list of rules where violation causes bugs (max 5-8 rules)",
+      "Closing blockquote — 'Need more detail? Use the Index.' with link"
+    ],
+    "rules": [
+      "Opening line MUST say: 'Read this first. For 80% of tasks this is all you need.'",
+      "Opening line MUST include a link back to the Index: [Index](#index)",
+      "Closing line MUST say: 'Need more detail? Use the [Index](#index) to jump directly to the section you need.'",
+      "Function table columns: Function | Returns | Use for",
+      "Hard Rules must be numbered, bolded rule name, then explanation after em dash",
+      "Keep total length under 120 lines — if longer, move detail to a dedicated section and link to it",
+      "Never duplicate information that is ONLY needed for deep-dive tasks",
+      "Quick Reference Card is for CURRENT SHIPPED API only — NEVER list future or planned APIs here"
+    ]
+  },
+
+  "required_sections": {
+    "description": "Two section lists — one per architecture layer. Use the list matching the module you are documenting. Quick Reference Card and Index are required for both.",
+    "_note": "Never omit Overview, Quick Reference Card, Index, or Version History from either layer.",
+
+    "layer_1_forms_toolkit": {
+      "use_for": "forms_toolkit/ pure-Python modules — field validators, schema parsers, export formatters, scoring engines",
+      "sections": [
+        {
+          "heading": "## Overview",
+          "content": "Metadata table: Location, Type, Purpose, Status, Tests, Key dependencies. Plus links to any companion spec/plan docs."
+        },
+        {
+          "heading": "## Why This Exists",
+          "content": "What gap this module fills. What the alternative (no module, or a simpler approach) would have looked like and why it was rejected. Past-tense, concise."
+        },
+        {
+          "heading": "## Current Features",
+          "content": "Two sub-tables: 'Implemented' (Feature | File | Description) and 'Not in scope' (NOT here | Where it belongs). ONLY list features that are SHIPPED — no 'coming soon'."
+        },
+        {
+          "heading": "## Architecture / Design",
+          "content": "Diagrams (ASCII or mermaid — follow mermaid_diagrams rules), sub-sections for module structure, data flow, key invariants. Every diagram label must map to a real function, class, or constant in the code."
+        },
+        {
+          "heading": "## File Structure",
+          "content": "Tree view of all files with inline comments explaining each file's role. Must match the actual directory — verify against the filesystem."
+        },
+        {
+          "heading": "## Quick Start",
+          "content": "Copy-paste Python examples for the 2-3 most common use cases. No explanation — just working code. Must run with: python -c 'from forms_toolkit...' in a fresh virtualenv."
+        },
+        {
+          "heading": "## TODO List",
+          "content": "Minor improvements only — items that take under 2 hours and need no new module or model. Table: # | Task | Reason. Three priority sub-sections: High / Medium / Low. Any larger work belongs in a new Feature Specification via /speckit-specify."
+        },
+        {
+          "heading": "## Running Tests",
+          "content": "Bash code block with pytest commands: single file, full module, with -v. Must work when copy-pasted from the project root."
+        },
+        {
+          "heading": "## Test Configuration Details",
+          "content": "Fixtures table (Fixture | What it creates). Edge cases covered list. Omit only if module has zero tests."
+        },
+        {
+          "heading": "## Configuration Reference",
+          "content": "Dataclass fields table (Field | Type | Default | Notes). Any environment-specific behavior. Include the standalone __main__ test block usage if one exists."
+        },
+        {
+          "heading": "## Output Format",
+          "content": "Return value examples for each public function. Show the success case and the error/empty case. For dataclass returns, show the full field structure. This is the most-read section for agent callers."
+        },
+        {
+          "heading": "## Related Files",
+          "content": "Table of files that produce or consume this module. Columns: File | Role. Include any known import constraints."
+        },
+        {
+          "heading": "## Version History",
+          "content": "Table: Version | Date | Description. Most recent at top. WHAT changed and WHY — never 'updated README'."
+        }
+      ]
+    },
+
+    "layer_2_django_app": {
+      "use_for": "Django app READMEs — portal_core, form_builder, form_respondent, response_viewer, analytics, user_auth, and any future Django app",
+      "sections": [
+        {
+          "heading": "## Overview",
+          "content": "Metadata table: Location, Type, Purpose, Status, Tests, Key dependencies. URLs namespace. Plus links to any companion spec/plan docs."
+        },
+        {
+          "heading": "## Why This Exists",
+          "content": "What user-facing or platform need this app serves. What the alternative would have looked like and why this app boundary was chosen. Past-tense, concise."
+        },
+        {
+          "heading": "## Current Features",
+          "content": "Two sub-tables: 'Implemented' (Feature | File | Description) and 'Not in scope' (NOT here | Where it belongs). ONLY list features that are SHIPPED — no 'coming soon'."
+        },
+        {
+          "heading": "## Architecture / Design",
+          "content": "Diagrams (ASCII or mermaid — follow mermaid_diagrams rules), sub-sections for layers, request flow, HTMX interaction model. Every diagram label must map to a real view, service, model, or URL name."
+        },
+        {
+          "heading": "## File Structure",
+          "content": "Tree view of all files with inline comments. Must match the actual directory — verify against the filesystem."
+        },
+        {
+          "heading": "## Quick Start",
+          "content": "Setup steps: URL include, settings entry, migration command. Copy-paste ready. Must result in the app being accessible when followed."
+        },
+        {
+          "heading": "## TODO List",
+          "content": "Minor improvements only — items that take under 2 hours and need no new model, service, or architectural change. Table: # | Task | Reason. Three priority sub-sections: High / Medium / Low. Any larger work belongs in a new Feature Specification via /speckit-specify."
+        },
+        {
+          "heading": "## Running Tests",
+          "content": "Bash code block with pytest-django commands: single file, full app, with -v. Must work when copy-pasted from the project root."
+        },
+        {
+          "heading": "## Test Configuration Details",
+          "content": "Fixtures table (Fixture | What it creates). Edge cases covered list. Omit only if app has zero tests."
+        },
+        {
+          "heading": "## HTMX Endpoints",
+          "content": "Table of all HTMX-specific views: URL name | Method | hx-target | Response partial | Triggered by. This replaces 'Output Format' for Django apps — agents need to know what each view returns, not Python return values."
+        },
+        {
+          "heading": "## Configuration Reference",
+          "content": "settings.py entries required by this app. URL namespace and include pattern. Any environment variables. Admin URL if the app registers admin pages."
+        },
+        {
+          "heading": "## Related Files",
+          "content": "Table of files that this app imports from or that import from this app. Columns: File | Role."
+        },
+        {
+          "heading": "## Version History",
+          "content": "Table: Version | Date | Description. Most recent at top. WHAT changed and WHY — never 'updated README'."
+        }
+      ]
+    }
+  },
+
+  "version_history_rules": {
+    "description": "Rules for maintaining the Version History section in Module READMEs.",
+    "rules": [
+      "Add a new row at the TOP of the table for every significant update",
+      "Version format: major.minor (e.g. 1.0, 1.1, 2.0)",
+      "Increment MINOR for: README corrections, new sections, diagram additions, docstring-level fixes",
+      "Increment MAJOR for: new public functions, new models, architectural changes, new sections that change the mental model of the module",
+      "Date format: YYYY-MM-DD",
+      "Description must state WHAT changed and WHY — NOT 'updated README'",
+      "Also update **Last updated:** in the header to match the latest version date",
+      "If the change added a mermaid diagram, the description MUST note which code symbols the diagram was verified against"
+    ],
+    "example_row": "| 1.2 | 2026-05-20 | Added mermaid stateDiagram to Architecture section showing form lifecycle (Draft → Published → Archived → Deleted). Every label verified against FormStatus choices in forms_toolkit/schema.py. |"
+  },
+
+  "mermaid_diagrams": {
+    "description": "Rules for adding mermaid diagrams to Module READMEs. GitHub renders mermaid natively. A good mermaid saves 30+ seconds of reading; a bad one silently lies when the code drifts. Default stance: NO DIAGRAM until a diagram earns its place.",
+
+    "rules": [
+      "1. JUSTIFY EACH DIAGRAM — Would this save the reader 30+ seconds of text reading? Does it make a decision flow instantly obvious? If no, use a table or prose instead. Mermaid is not decoration.",
+      "2. NEVER DUPLICATE TABLES — If a markdown table already shows the same information, do NOT also add a mermaid. One source of truth per fact.",
+      "3. CO-LOCATE WITH THE TEXT — Place each diagram immediately next to the prose it illustrates so an edit to one forces the writer to look at the other. Diagrams separated from their text rot silently.",
+      "4. STALENESS IS WORSE THAN ABSENCE — A mermaid that contradicts the current code is worse than no mermaid, because readers trust visuals more than prose. If you cannot keep it in sync, delete it.",
+      "5. MAX ONE DIAGRAM PER CONCEPT — If a section needs more than one mermaid to explain a single idea, the idea is too big for a diagram and belongs in prose + a table.",
+      "6. USE THE RIGHT DIAGRAM TYPE — flowchart for data/control flow, stateDiagram-v2 for lifecycle states, sequenceDiagram for time-ordered HTMX interactions, classDiagram rarely (usually a table is better).",
+      "7. LABEL DENSITY — Labels must be specific enough to understand the diagram WITHOUT the surrounding prose. 'Process' is useless. 'forms_toolkit.validator.validate_field() → FieldError | None' is good.",
+      "8. COLOR DELIBERATELY — classDef with a semantic palette (one color per concept: storage=blue, validation=green, decision=amber, error=red). Never decorative colors.",
+      "9. TEST IN THE RENDERER — Before committing, verify the diagram renders in GitHub's markdown preview. Parse errors usually mean HTML entities in labels — put labels in quotes and use <br/> for newlines.",
+      "10. MAX ~8 DIAGRAMS PER MODULE README — more than that signals the README is trying to document too much at once."
+    ],
+
+    "good_candidates": [
+      "Form lifecycle states (Draft → Published → Archived) — stateDiagram-v2",
+      "Field branching logic (condition check → show/hide) — flowchart TD",
+      "HTMX request/response cycle for form submission — sequenceDiagram",
+      "Two-layer architecture (forms_toolkit → service → view) — flowchart LR",
+      "RBAC role resolution (Owner vs Collaborator element states) — flowchart TD",
+      "Field UUID versioning model (response storage across form edits) — flowchart LR"
+    ],
+
+    "bad_candidates": [
+      "Section tables of contents (the Index already handles this)",
+      "Anything already perfectly captured by a markdown table",
+      "Pure enumerations with no relationships (use a bullet list)",
+      "Decorative 'overview' diagrams with 4 boxes and no meaningful edges",
+      "Diagrams that repeat another diagram with trivial visual tweaks",
+      "Diagrams where label density is so high they are unreadable on mobile"
+    ],
+
+    "maintenance_contract": [
+      "When you edit code that a mermaid diagram describes, you MUST update the diagram in the same commit. No exceptions.",
+      "When reviewing a PR, treat stale mermaid labels the same as stale docstrings — a review blocker.",
+      "If you cannot figure out how to update a diagram, the diagram was too ambitious — delete it and replace with prose + a table.",
+      "Every mermaid diagram must have at least one label that names a real function, class, field, or constant. Zero real identifiers = decorative = delete it.",
+      "When adding a new mermaid, grep the code for every function/class name that will appear as a label and confirm it exists. Do NOT document code that does not exist yet — that belongs in a plan-stage document."
+    ]
+  },
+
+  "heading_hierarchy": {
+    "description": "Strict heading level rules.",
+    "rules": [
+      "H1 (#): Document title only — exactly ONE per file",
+      "H2 (##): Major sections (Index, Quick Reference Card, Overview, Why This Exists, etc.)",
+      "H3 (###): Subsections within a major section",
+      "H4 (####): Only if a subsection itself needs sub-grouping — use sparingly",
+      "Never skip levels (do not jump from H1 to H3)"
+    ]
+  },
+
+  "anchor_generation": {
+    "description": "How GitHub Flavored Markdown generates anchor IDs from headings — used for Index links.",
+    "algorithm": [
+      "1. Take the heading text (exclude the # prefix)",
+      "2. Convert to lowercase",
+      "3. Remove all characters that are not letters, digits, spaces, or hyphens",
+      "4. Replace spaces with hyphens",
+      "5. Leading/trailing hyphens from stripped characters are kept"
+    ],
+    "examples": [
+      "## Overview                        → #overview",
+      "## Why This Exists                 → #why-this-exists",
+      "## Architecture / Design           → #architecture--design",
+      "## Agent Quick Reference Card      → #agent-quick-reference-card",
+      "## HTMX Endpoints                  → #htmx-endpoints"
+    ],
+    "duplicate_anchor_warning": "If two headings produce the same anchor, GitHub appends -1, -2, etc. Avoid duplicate heading text across the file."
+  },
+
+  "agent_update_workflow": {
+    "description": "Step-by-step process an agent MUST follow when updating an existing Module README.",
+    "steps": [
+      "1. Read the FULL README first — do not skim",
+      "2. Identify what CODE changed (new function? bug fix? refactor? new model? new HTMX endpoint?)",
+      "3. Update the relevant section(s) with accurate information — every label, function name, and field name must match the current code",
+      "4. If a mermaid diagram describes the changed code, UPDATE THE DIAGRAM IN THE SAME EDIT (maintenance contract)",
+      "5. Update the Quick Reference Card if the public API, consumers, hard rules, or HTMX endpoints changed",
+      "6. Update the Index if any section was added, removed, or renamed",
+      "7. Add a new row to Version History describing all changes made (WHAT and WHY, never 'updated README')",
+      "8. Update **Last updated:** in the header to today's date and bump inline version",
+      "9. Do NOT change sections that are unrelated to the update",
+      "10. If any change added or modified a mermaid diagram, verify it renders in GitHub's markdown preview before committing"
+    ],
+    "when_to_update_quick_reference_card": [
+      "New public function or HTMX endpoint added or removed",
+      "New consumer file identified",
+      "New hard rule discovered",
+      "Key constant renamed or changed",
+      "Service layer result dataclass fields changed"
+    ]
+  },
+
+  "claude_md_ledger": {
+    "description": "How to maintain the CLAUDE.md 'Implemented' ledger — the per-feature as-built record loaded into agent context EVERY session. Keep it scannable; the archive is the durable full record.",
+    "rules": [
+      "One '**Implemented**: `###-feature`' entry per shipped feature, newest first.",
+      "Keep only the newest ~7 features FULL inline. When a new feature ships, DEMOTE the oldest full entry to a 3-line summary (what it did · key lesson/DR · spec + archive pointer) and MOVE its full text under a '## NNN-name' anchor in .specify/ledger_archive.md.",
+      "Older features live as a 3-line summary or a one-line pointer to .specify/ledger_archive.md#NNN-name. Never DELETE an entry — archive it. Every shipped feature stays reachable (full inline / 3-line summary / pointer).",
+      "Reusable PATTERNS + cross-cutting rules do NOT belong in the ledger — they live in decision records + the CLAUDE.md 'durable fact' sections (which stay loaded). The ledger is per-feature as-built only.",
+      "Rationale: a ~600-word single-line entry x N features bloats the always-loaded context. On 2026-07-18 an overdue archive pass cut CLAUDE.md 313 KB -> 124 KB doing exactly this."
+    ]
+  },
+
+  "writing_style": {
+    "description": "Writing style rules for Module READMEs.",
+    "rules": [
+      "Use PRESENT TENSE and indicative mood — 'the service returns X', 'the view renders Y'. No 'we will', 'planned', 'coming soon' — that language belongs in Feature Specifications",
+      "Use tables over bullet lists for structured data (functions, files, features, endpoints)",
+      "Use bullet lists for sequential steps or non-tabular lists",
+      "Use blockquotes (>) for critical agent-facing instructions or warnings",
+      "Bold (**text**) only for: rule names in Hard Rules, column headers, critical warnings",
+      "Code blocks for all import statements, function signatures, URL patterns, and config snippets",
+      "Inline code (`text`) for: function names, file paths, constant names, model field names, URL names",
+      "ASCII diagrams for simple flows; mermaid for complex multi-branch flows (follow mermaid_diagrams rules)",
+      "Avoid filler phrases like 'This section describes...' — go straight to the content",
+      "Section summaries in the Index must be ONE concise line",
+      "Never document what is planned — only what is SHIPPED. Planned work belongs in a Feature Specification under .specify/specs/"
+    ]
+  },
+
+  "cross_reference_interlinking": {
+    "description": "Rules for adding clickable links between sections within the same README. Makes the document navigable without scrolling.",
+    "rules": [
+      "Every time a section mentions another section by name, make it a clickable link: [Section Name](#anchor)",
+      "Use the same anchor format as the Index",
+      "Each section should have a 1-2 line intro linking to prerequisite and related sections BEFORE its content starts",
+      "The Quick Reference Card Hard Rules should each link to the section with full detail",
+      "Do NOT over-link — only link when the reference is meaningful"
+    ],
+    "minimum_links": {
+      "small_readme": "under 500 lines: Index links only",
+      "medium_readme": "500-1500 lines: Index + 5-10 cross-references in key sections",
+      "large_readme": "over 1500 lines: Index + 15+ cross-references + section intros"
+    }
+  },
+
+  "live_document_contract": {
+    "description": "Module READMEs are LIVING DOCUMENTS under a maintenance contract. This is the single most important difference from plan-stage documents.",
+    "rules": [
+      "When the code changes, this README MUST change in the SAME commit. No 'I will update the README later'.",
+      "When reviewing a PR that touches code described by a section or diagram here, the review MUST check that the corresponding README content is still accurate. Stale doc = review blocker.",
+      "If you cannot keep a section accurate (the code is too volatile or the mechanism too subtle), DELETE the section rather than leave it stale. An accurate 500-line README beats a drifting 2000-line README.",
+      "Every fact in this README should be traceable to a specific file or symbol in the code. If you find an assertion you cannot trace, investigate — it is either wrong, outdated, or speculative."
+    ]
+  }
+}

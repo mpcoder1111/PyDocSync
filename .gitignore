@@ -71,9 +71,3 @@ temp_*/
 tmp_*/
 test_tmp_*/
 
-# Local AI-Agent / Spec-Kit Architecture Infrastructure (Kept locally for upgrades, not committed to public GitHub)
-.agents/
-.specify/
-discussions/
-ideas/
-AGENTS.md
