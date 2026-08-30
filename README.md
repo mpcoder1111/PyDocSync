@@ -491,6 +491,22 @@ The following are **observed benchmark metrics**, not claims of universal accura
 
 ---
 
+## AI Agent Integration & Skills
+
+PyDocSync is designed ground-up for AI-assisted development (Claude Code, Google Antigravity, Cursor, GitHub Copilot, Codex).
+
+To equip your AI coding agent with native PyDocSync workflows in your own project, copy the bundled consumer skill:
+
+- Source: [`.agents/skills/pydocsync/SKILL.md`](.agents/skills/pydocsync/SKILL.md)
+- Target: `<your-repo>/.agents/skills/pydocsync/SKILL.md` or `.claude/skills/pydocsync.md`
+
+When installed, the AI agent will automatically:
+1. Run `pydocsync check` after editing Python functions or classes.
+2. Read the structured `PYDOCSYNC001` diagnostic output.
+3. Update docstrings / contracts when behavior changes, or run `pydocsync accept` with a clear audit reason if the documentation remains accurate.
+
+---
+
 ## License
 
 PyDocSync is open-source software licensed under the [Apache-2.0 License](LICENSE).

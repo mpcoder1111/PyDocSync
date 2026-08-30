@@ -1,4 +1,12 @@
-# PyDocSync — Agent Context & Rules
+# PyDocSync — Contributor & Internal Agent Rules
+
+> [!NOTE]
+> **Scope & Audience**: This document (`AGENTS.md`) defines the internal governance, coding standards, 
+> and Spec-Driven Development (SDD) lifecycle for **contributors and AI agents developing the PyDocSync library itself**.
+>
+> If you are an **end-user / consumer** integrating PyDocSync into your own project:
+> - Use the copyable consumer agent skill: [`.agents/skills/pydocsync/SKILL.md`](.agents/skills/pydocsync/SKILL.md)
+> - Refer to the [README.md](README.md) for CLI commands and Python API usage.
 
 **PyDocSync**: Deterministic Code–Documentation Synchronization for AI-Assisted Python Codebases.
 
