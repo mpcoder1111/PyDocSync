@@ -170,7 +170,38 @@ PyDocSync works alongside existing Python quality tools, filling a distinct gap:
 
 ---
 
-## 9. When to Read This Skill
+## 9. Governance & Immutability Rules
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                 Human Lead / Repository Owner               │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ (Only humans modify)
+                               ▼
+            ┌────────────────────────────────────┐
+            │             AGENTS.md              │  <-- GOVERNANCE & POLICY
+            │     (Authoritative & Protected)    │
+            └──────────────────┬─────────────────┘
+                               │ (Constrains)
+                               ▼
+            ┌────────────────────────────────────┐
+            │              AI Agent              │
+            └──────────┬─────────────────────────┘
+                       │ (Consults as domain context)
+                       ▼
+            ┌────────────────────────────────────┐
+            │        PyDocSync SKILL.md          │  <-- KNOWLEDGE & SKILL
+            │        (Advisory Context)          │
+            └────────────────────────────────────┘
+```
+
+- **`AGENTS.md` is Authoritative & Protected**: The AI agent must **never** modify, rewrite, or append to `AGENTS.md` autonomously just because this skill was read.
+- **Explicit Permission Required**: If the agent discovers that `AGENTS.md` is missing or its PyDocSync instructions are outdated, it must **report the issue to the human user and receive explicit permission** before making any changes to governance files.
+- **Role Separation**: `AGENTS.md` governs agent behavior, project rules, and gates. `SKILL.md` provides domain knowledge, AST concepts, and tool mechanics.
+
+---
+
+## 10. When to Read This Skill
 
 An AI agent should activate or reference this skill when:
 - Diagnosing a complex `PYDOCSYNC001` failure or analyzing representation diffs.
@@ -178,13 +209,12 @@ An AI agent should activate or reference this skill when:
 - Writing programmatic scripts or MCP tools that interface with PyDocSync.
 - Understanding AST representation planes or baseline envelope versioning.
 
-*(For routine daily edits, the compact rules in `AGENTS.md` provide the mandatory commands).*
-
 ---
 
-## 10. Project-Specific Usage
+## 11. Reference & Integration
 
-This repository installs PyDocSync as an external dependency:
-- **Repository**: `https://github.com/mpcoder1111/PyDocSync.git` (`v0.2.0`)
-- **CLI Executable**: `.\.venv\Scripts\pydocsync.exe`
-- **Scope**: Applied to all Layer-1 Python domain modules, utility classes, and MCP protocol tools.
+- **Official GitHub Repository**: [`https://github.com/mpcoder1111/PyDocSync`](https://github.com/mpcoder1111/PyDocSync)
+- **License**: Apache-2.0
+- **Standard CLI Executable**: `.\.venv\Scripts\pydocsync.exe` or `pydocsync`
+- **Scope**: Applicable to all Python packages, Layer-1 domain modules, utility classes, and MCP protocol tools.
+
