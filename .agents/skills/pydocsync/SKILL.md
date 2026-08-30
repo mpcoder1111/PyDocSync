@@ -78,9 +78,11 @@ Run scoped unit tests (pytest)
 Run: pydocsync check
         ↓
  ┌──────┴──────────────────────────────────────┐
-PASS (Exit 0)                           FAIL (Exit 1: PYDOCSYNC001)
+PASS (Exit 0)                              FAIL (Exit 1)
                                                ↓
-                                      Inspect evidence & diagnostic
+                                      Inspect diagnostic
+                                               ↓
+                                         PYDOCSYNC001?
                                                ↓
                              ┌─────────────────┴─────────────────┐
                              ↓                                   ↓
