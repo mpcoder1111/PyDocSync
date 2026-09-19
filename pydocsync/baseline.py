@@ -44,7 +44,12 @@ class BaselineManager:
     """Handles loading, updating, and validating distributed JSON baselines."""
 
     def __init__(self, root_dir: Path | str = ".") -> None:
-        self.root_dir = Path(root_dir)
+        """Initialize BaselineManager with project root directory.
+
+        Args:
+            root_dir: Root directory of the project (default ".").
+        """
+        self.root_dir = Path(root_dir).resolve()
         self.baseline_root = self.root_dir / ".project" / "pydocsync"
 
     def _get_baseline_path(self, module_path: Path | str) -> Path:
@@ -88,7 +93,7 @@ class BaselineManager:
         
         envelope = {
             "schema_version": 1,
-            "pydocsync_version": "0.2.0",
+            "pydocsync_version": "0.3.0",
             "fingerprint_algorithm": "sha256",
             "symbols": serializable,
         }

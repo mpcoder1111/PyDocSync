@@ -62,6 +62,11 @@ Shipped specs are immutable historical records; new iterations require a newly n
   - Never delete an entry — archive it when new features ship.
 -->
 
+- **Implemented**: `008-django-migrations-traversal-hardening` (2026-09-19)
+  - **Summary**: Excluded auto-generated Django migrations by default in centralized discovery engine (`pydocsync/discovery.py`). Fixed relative-root false-passes (`--root ..`) by normalizing root paths and evaluating exclusions against relative directory components. Implemented high-speed in-place directory pruning during traversal with `os.walk`. Added zero-file error safety (exit code 2). Updated CLI guidance in `report.py` and verified 94/94 tests passing in 3.20s.
+  - **Spec & Plan**: [`specs/008-django-migrations-traversal-hardening/spec.md`](specs/008-django-migrations-traversal-hardening/spec.md) | [`plan.md`](specs/008-django-migrations-traversal-hardening/plan.md) | [`convergence_report.md`](specs/008-django-migrations-traversal-hardening/convergence_report.md)
+  - **Tests**: `tests/` (94/94 passed).
+
 - **Implemented**: `007-pydocsync-release-audit` (2026-08-29)
   - **Summary**: Pre-release security, schema versioning, AST determinism, and policy audit for `pydocsync-0.2.0`. Added explicit `schema_version: 1` envelope to baseline lockfiles with legacy fallback, enforced strict input validation on `pydocsync accept` (rejecting whitespace/empty reasons and non-existent symbols with standard exit codes), unit tested AST normalization invariants (`ctx` Load/Store/Del preservation and location stripping), verified path traversal isolation and disk freshness across 90 automated tests passing 100% in 2.35s.
   - **Spec & Plan**: [`specs/007-pydocsync-release-audit/spec.md`](specs/007-pydocsync-release-audit/spec.md) | [`plan.md`](specs/007-pydocsync-release-audit/plan.md) | [`release_audit_report.md`](specs/007-pydocsync-release-audit/release_audit_report.md) | [`convergence_report.md`](specs/007-pydocsync-release-audit/convergence_report.md)

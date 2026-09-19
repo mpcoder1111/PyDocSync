@@ -17,13 +17,13 @@
     },
     "format_pydocsync001_report": {
       "api": "3064f18baf95763815c8de55eeeab6968f44b245c4c7b4f228175b891ae09c4b",
-      "code": "d3db5f4ccf402db6912c263967e8036df717e474a684020a6c6759aac51a5dd9",
+      "code": "fb1cb87b7df23b8471cccb4a026ec3dd85b5ee7c2e923ba45eabd5c5cc77ba3d",
       "doc": "94223510e658f422644772c792f8f80078af5540e28a43474c943a1e8452bda2",
       "example": null,
-      "last_reviewed_at": "2026-08-29T18:21:47.147737+00:00",
+      "last_reviewed_at": "2026-09-19T17:23:50.886146+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
-      "review_reason": "Initial baseline creation",
+      "review_reason": "Updated action instruction string from monorepo path to installed CLI entrypoint",
       "status": "acknowledged",
       "types": "934bead5b6cb493af1435a357aeefd3368453eb0fcc71d95951e9507fbccfbe7"
     }

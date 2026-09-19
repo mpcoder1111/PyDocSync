@@ -4,7 +4,7 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python: >=3.10](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://www.python.org/)
-[![Status: Experimental 0.2.0](https://img.shields.io/badge/Status-Experimental_0.2.0-orange.svg)]()
+[![Status: Experimental 0.3.0](https://img.shields.io/badge/Status-Experimental_0.3.0-orange.svg)]()
 
 > **PyDocSync deterministically detects when Python implementation changes may require corresponding documentation updates or an explicit documentation review.**
 
@@ -211,7 +211,7 @@ This is intentional: **PyDocSync prefers an explicit review over silently allowi
 
 ## Installation
 
-PyDocSync 0.2.0 is an experimental release.
+PyDocSync 0.3.0 is an experimental release.
 
 Install directly from GitHub:
 
@@ -219,16 +219,16 @@ Install directly from GitHub:
 python -m pip install git+https://github.com/mpcoder1111/PyDocSync.git
 ```
 
-For the `v0.2.0` release tag:
+For the `v0.3.0` release tag:
 
 ```bash
-python -m pip install git+https://github.com/mpcoder1111/PyDocSync.git@v0.2.0
+python -m pip install git+https://github.com/mpcoder1111/PyDocSync.git@v0.3.0
 ```
 
 A release wheel is also available:
 
 ```bash
-python -m pip install pydocsync-0.2.0-py3-none-any.whl
+python -m pip install pydocsync-0.3.0-py3-none-any.whl
 ```
 
 ### Requirements
@@ -329,6 +329,22 @@ Then `pydocsync check` returns to the clean `PASS` state (exit code `0`).
 > [!NOTE]
 > **Trust and Authorization Model**:  
 > `pydocsync accept` does **not** prove documentation correctness. It serves as an audit record that a human developer or AI agent has reviewed the change and determined the existing doc remains accurate. Non-empty, descriptive audit reasons are strictly required.
+
+### Default Ignored Directories
+
+PyDocSync automatically prunes standard vendor, artifact, and migration directories during traversal:
+
+```text
+.venv, venv, .git, __pycache__, build, dist, _archive, migrations, tests, fixtures
+```
+
+### CLI Exit Codes
+
+| Exit Code | Classification | Condition |
+|---|---|---|
+| **`0`** | `PASS` | All monitored symbols synchronized with baseline. |
+| **`1`** | `PYDOCSYNC001` | Review obligation detected (code changed without doc update, or symbol not found in `accept`). |
+| **`2`** | `ERROR` | CLI usage error, missing required audit reason, or zero Python source files found under target root. |
 
 ---
 

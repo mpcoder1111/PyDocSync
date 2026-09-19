@@ -43,7 +43,7 @@ def format_pydocsync001_report(failures: list[SyncFailure]) -> str:
             f"Reason:     {fail.rule_result.reason}",
             f"Action:     Update docstring for '{fail.symbol.qualname}', or if documentation",
             f"            remains 100% accurate, acknowledge via:",
-            f'            python packages/pydocsync/pydocsync/cli.py accept --symbol {fail.symbol.qualname} --reason "<audit reason>"',
+            f'            pydocsync accept --symbol {fail.symbol.qualname} --reason "<audit reason>"',
             "-" * 70,
         ]
         blocks.append("\n".join(block))

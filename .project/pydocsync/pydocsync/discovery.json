@@ -1,0 +1,43 @@
+{
+  "fingerprint_algorithm": "sha256",
+  "pydocsync_version": "0.2.0",
+  "schema_version": 1,
+  "symbols": {
+    "PathFilter": {
+      "api": "96e59e81946fb98e8dfbdc5a8e5d2eb56719e4f6db919a1c67594a0a08c8bf58",
+      "code": "8dc4978a72df528a88d7f2c5970163753ff8e672d5918576911b5e282c96669f",
+      "doc": "e277cfd7d7ba481a1cfbd78812815f1429d07ea54de74a20391641eb59edff2a",
+      "example": null,
+      "last_reviewed_at": "2026-09-19T17:24:08.928713+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline for discovery module",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "PathFilter.should_ignore_dir": {
+      "api": "8709567499d52f865f03d9d6750d15f814f6e11f4684b121a6c758715d95b7e6",
+      "code": "a0c5e81b84457d6ddd4d69f9c7abf329c9f64a5d3ae03c31bab79014bdc0ceb3",
+      "doc": "a90b828e980c38596801db5114cfef6df37de65a7f64d0f11bddf10829dff1a6",
+      "example": null,
+      "last_reviewed_at": "2026-09-19T17:24:08.928713+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline for discovery module",
+      "status": "acknowledged",
+      "types": "4acb05f2ab9116f90e28ce7aec97299968557847555796be27dab05e12a2ae44"
+    },
+    "discover_python_files": {
+      "api": "dafb6f68872b2638d17b6796ea4fcc21188106d50e37ad9380ae0517a052cca3",
+      "code": "b14e86eb8a7d3a49f3a7a6178cd7323801be5d8804ef306d28d93c558998440c",
+      "doc": "ca16eb1a284705673f6c95e57db0a472e63f64ed033fea0caf27a56912a10c27",
+      "example": null,
+      "last_reviewed_at": "2026-09-19T17:24:08.928713+00:00",
+      "raise_detail": "383120d6229c77a2a33ced42d3a2f73a9834087dc9253a91845efa33029efad1",
+      "raise_type": "bb99d84da6e44d2e5378c20c5862577ef7c75ffa9bd730a8235e15b34a2fb007",
+      "review_reason": "Initial baseline for discovery module",
+      "status": "acknowledged",
+      "types": "da8f780f11febe4333809c1a7af761168b6246701fb06a8e9a171b74734c737e"
+    }
+  }
+}

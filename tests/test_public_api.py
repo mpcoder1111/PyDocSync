@@ -21,7 +21,7 @@ def test_public_api_exports():
     """Verify that pydocsync exports only the approved public API surface."""
     expected_exports = {"__version__", "check", "init", "accept", "SyncResult", "SyncFailure"}
     assert set(pydocsync.__all__) == expected_exports
-    assert pydocsync.__version__ == "0.2.0"
+    assert pydocsync.__version__ == "0.3.0"
     assert callable(check)
     assert callable(init)
     assert callable(accept)

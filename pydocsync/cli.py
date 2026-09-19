@@ -15,39 +15,36 @@ from pathlib import Path
 from pydocsync.ast_extract import extract_symbols_from_source
 from pydocsync.baseline import BaselineManager
 from pydocsync.classifier import ASTChangeImpactClassifier, ChangeClassification, RuleResult
+from pydocsync.discovery import discover_python_files
 from pydocsync.fingerprint import FingerprintSet, generate_fingerprints
 from pydocsync.report import SyncFailure, format_pydocsync001_report
 
 
 def scan_and_check(root_dir: Path | str = ".") -> list[SyncFailure]:
-    """Scan all Python files in root_dir against baseline lockfiles."""
-    root = Path(root_dir)
+    """Scan all Python files in root_dir against baseline lockfiles.
+
+    Args:
+        root_dir: Root directory of project or package to scan (default ".").
+
+    Returns:
+        List of SyncFailure instances representing unaligned symbols requiring review.
+
+    Raises:
+        FileNotFoundError: If root_dir does not exist.
+        NotADirectoryError: If root_dir is not a directory.
+        ValueError: If zero Python source files are found to scan.
+    """
+    root = Path(root_dir).resolve()
     mgr = BaselineManager(root_dir=root)
     classifier = ASTChangeImpactClassifier()
     failures: list[SyncFailure] = []
 
-    # Find all .py files excluding venv, hidden, build, test files, and archives
-    ignored_patterns = {
-        ".venv",
-        "venv",
-        "build",
-        "dist",
-        "__pycache__",
-        "_archive",
-        "tests",
-        "fixtures",
-        "Spashta_2.0",
-        "Spashta_2.1",
-    }
-    py_files = [
-        p
-        for p in root.rglob("*.py")
-        if not any(part.startswith(".") or part in ignored_patterns for part in p.parts)
-    ]
+    rel_py_files = discover_python_files(root_dir=root)
 
-    for py_file in py_files:
+    for rel_path in rel_py_files:
+        abs_file = root / rel_path
         try:
-            with open(py_file, "r", encoding="utf-8") as f:
+            with open(abs_file, "r", encoding="utf-8") as f:
                 content = f.read()
         except Exception:
             continue
@@ -57,7 +54,6 @@ def scan_and_check(root_dir: Path | str = ".") -> list[SyncFailure]:
         except Exception:
             continue
 
-        rel_path = py_file.relative_to(root)
         baseline_records = mgr.load_module_baseline(rel_path)
 
         for sym in symbols:
@@ -136,20 +132,30 @@ def scan_and_check(root_dir: Path | str = ".") -> list[SyncFailure]:
 
 
 def accept_symbol_review(symbol_qualname: str, reason: str, root_dir: Path | str = ".") -> bool:
-    """Explicitly record review acknowledgment for a symbol."""
-    root = Path(root_dir)
+    """Explicitly record review acknowledgment for a symbol.
+
+    Args:
+        symbol_qualname: Qualified symbol name (e.g. 'mypkg.mymod.my_func').
+        reason: Mandatory human or AI agent audit rationale explaining why doc remains accurate.
+        root_dir: Root directory of project (default ".").
+
+    Returns:
+        True if symbol was found and baseline updated, False otherwise.
+
+    Raises:
+        FileNotFoundError: If root_dir does not exist.
+        NotADirectoryError: If root_dir is not a directory.
+        ValueError: If zero Python source files are found to scan.
+    """
+    root = Path(root_dir).resolve()
     mgr = BaselineManager(root_dir=root)
 
-    # Search across python files for the symbol
-    py_files = [
-        p
-        for p in root.rglob("*.py")
-        if not any(part.startswith(".") or part in ("venv", "build", "dist", "__pycache__") for part in p.parts)
-    ]
+    rel_py_files = discover_python_files(root_dir=root)
 
-    for py_file in py_files:
+    for rel_path in rel_py_files:
+        abs_file = root / rel_path
         try:
-            with open(py_file, "r", encoding="utf-8") as f:
+            with open(abs_file, "r", encoding="utf-8") as f:
                 content = f.read()
             symbols = extract_symbols_from_source(content)
         except Exception:
@@ -158,7 +164,6 @@ def accept_symbol_review(symbol_qualname: str, reason: str, root_dir: Path | str
         for sym in symbols:
             if sym.qualname == symbol_qualname:
                 fp = generate_fingerprints(sym)
-                rel_path = py_file.relative_to(root)
                 mgr.record_symbol_baseline(rel_path, sym, fp, reason=reason, enforce_gating=False)
                 return True
 
@@ -166,38 +171,34 @@ def accept_symbol_review(symbol_qualname: str, reason: str, root_dir: Path | str
 
 
 def initialize_baseline(root_dir: Path | str = ".") -> int:
-    """Scan all Python files in root_dir and establish initial baseline lockfiles."""
-    root = Path(root_dir)
+    """Scan all Python files in root_dir and establish initial baseline lockfiles.
+
+    Args:
+        root_dir: Root directory of project or package to scan (default ".").
+
+    Returns:
+        Integer count of symbols successfully baselined.
+
+    Raises:
+        FileNotFoundError: If root_dir does not exist.
+        NotADirectoryError: If root_dir is not a directory.
+        ValueError: If zero Python source files are found to scan.
+    """
+    root = Path(root_dir).resolve()
     mgr = BaselineManager(root_dir=root)
     count = 0
 
-    ignored_patterns = {
-        ".venv",
-        "venv",
-        "build",
-        "dist",
-        "__pycache__",
-        "_archive",
-        "tests",
-        "fixtures",
-        "Spashta_2.0",
-        "Spashta_2.1",
-    }
-    py_files = [
-        p
-        for p in root.rglob("*.py")
-        if not any(part.startswith(".") or part in ignored_patterns for part in p.parts)
-    ]
+    rel_py_files = discover_python_files(root_dir=root)
 
-    for py_file in py_files:
+    for rel_path in rel_py_files:
+        abs_file = root / rel_path
         try:
-            with open(py_file, "r", encoding="utf-8") as f:
+            with open(abs_file, "r", encoding="utf-8") as f:
                 content = f.read()
             symbols = extract_symbols_from_source(content)
         except Exception:
             continue
 
-        rel_path = py_file.relative_to(root)
         for sym in symbols:
             fp = generate_fingerprints(sym)
             mgr.record_symbol_baseline(rel_path, sym, fp, reason="Initial baseline creation", enforce_gating=False)
@@ -207,6 +208,7 @@ def initialize_baseline(root_dir: Path | str = ".") -> int:
 
 
 def main() -> None:
+    """CLI entrypoint for PyDocSync commands (init, check, accept)."""
     parser = argparse.ArgumentParser(description="PyDocSync: Representation Synchronization CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -227,32 +229,43 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "init":
-        count = initialize_baseline(root_dir=args.root)
-        print(f"PYDOCSYNC: Initialized baseline for {count} compliant symbols across project.")
-        sys.exit(0)
+        try:
+            count = initialize_baseline(root_dir=args.root)
+            print(f"PYDOCSYNC: Initialized baseline for {count} compliant symbols across project.")
+            sys.exit(0)
+        except (FileNotFoundError, NotADirectoryError, ValueError) as err:
+            print(f"PYDOCSYNC ERROR: {err}", file=sys.stderr)
+            sys.exit(2)
 
     elif args.command == "check":
-        failures = scan_and_check(root_dir=args.root)
-        if failures:
-            print(format_pydocsync001_report(failures), file=sys.stderr)
-            sys.exit(1)
-        else:
-            print("PYDOCSYNC: All symbols synchronized with baseline.")
-            sys.exit(0)
+        try:
+            failures = scan_and_check(root_dir=args.root)
+            if failures:
+                print(format_pydocsync001_report(failures), file=sys.stderr)
+                sys.exit(1)
+            else:
+                print("PYDOCSYNC: All symbols synchronized with baseline.")
+                sys.exit(0)
+        except (FileNotFoundError, NotADirectoryError, ValueError) as err:
+            print(f"PYDOCSYNC ERROR: {err}", file=sys.stderr)
+            sys.exit(2)
 
     elif args.command == "accept":
         if not args.reason or not args.reason.strip():
             print("PYDOCSYNC ERROR: A non-empty, descriptive audit reason is required for 'accept'.", file=sys.stderr)
             sys.exit(2)
 
-        ok = accept_symbol_review(args.symbol, args.reason.strip(), root_dir=args.root)
-        if ok:
-            print(f"PYDOCSYNC: Symbol '{args.symbol}' successfully acknowledged and baseline updated.")
-            sys.exit(0)
-        else:
-            print(f"PYDOCSYNC ERROR: Symbol '{args.symbol}' not found in project.", file=sys.stderr)
-            sys.exit(1)
-
+        try:
+            ok = accept_symbol_review(args.symbol, args.reason.strip(), root_dir=args.root)
+            if ok:
+                print(f"PYDOCSYNC: Symbol '{args.symbol}' successfully acknowledged and baseline updated.")
+                sys.exit(0)
+            else:
+                print(f"PYDOCSYNC ERROR: Symbol '{args.symbol}' not found in project.", file=sys.stderr)
+                sys.exit(1)
+        except (FileNotFoundError, NotADirectoryError, ValueError) as err:
+            print(f"PYDOCSYNC ERROR: {err}", file=sys.stderr)
+            sys.exit(2)
 
 
 if __name__ == "__main__":

@@ -81,7 +81,7 @@ def test_full_project_scan_performance():
     from pydocsync.cli import scan_and_check
 
     start_time = time.perf_counter()
-    failures = scan_and_check(root_dir="packages/pydocsync/pydocsync")
+    failures = scan_and_check(root_dir="pydocsync")
     duration_ms = (time.perf_counter() - start_time) * 1000.0
 
     print(f"\n[PERFORMANCE] Scanned 6 production modules in {duration_ms:.2f} ms (Failures: {len(failures)})")

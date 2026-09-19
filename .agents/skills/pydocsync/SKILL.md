@@ -20,7 +20,7 @@ PyDocSync solves this by computing multi-representation AST fingerprints and eva
 ## 2. Project Information
 
 - **Official GitHub Repository**: [`https://github.com/mpcoder1111/PyDocSync`](https://github.com/mpcoder1111/PyDocSync)
-- **Current Version**: `0.2.0 Experimental`
+- **Current Version**: `0.3.0 Experimental`
 - **Supported Python**: Python `3.10+` (zero runtime dependencies, standard library only)
 
 ---

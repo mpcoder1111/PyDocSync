@@ -5,13 +5,13 @@
   "symbols": {
     "BaselineManager": {
       "api": "43c4db0db42bcdaf24acbd04bc1046823f0a56402315763d2c47bfe7dd05b5f6",
-      "code": "fb16e6fa9d8d82bbbd041bd7c3d8a2bcc294f009fc0ffafe6b25c2044bae96db",
+      "code": "afb97511cc2c497af153a9f8903ca4233214240a183024d948ef5ca3432787f0",
       "doc": "59d5a744e5f5a531241e44317c14a53902f25451cbcaed33930a1cac8fc67f96",
       "example": null,
-      "last_reviewed_at": "2026-08-29T18:21:47.075288+00:00",
+      "last_reviewed_at": "2026-09-19T17:23:55.067035+00:00",
       "raise_detail": "f683898169d845582945e9871a1a3fdcd1b1d01205d11d37190ed84c483a7b41",
       "raise_type": "b6276ba72bbc508431b11298180ac724c3eef76599d6862ff5914355b7524739",
-      "review_reason": "Initial baseline creation",
+      "review_reason": "Resolved root directory path to ensure consistent absolute path calculations",
       "status": "acknowledged",
       "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
     },
