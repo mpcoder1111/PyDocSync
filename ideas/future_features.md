@@ -3,13 +3,16 @@
 > Items here are **not being implemented**. Per `AGENTS.md`: when an item moves to active development, run `/speckit-specify <name>` and remove it from this list.
 > Source of most items: the v0.3.0 field report (spec `009-silent-false-pass-hardening`) and its implementation findings. Numbers in brackets refer to the reporter's gap table.
 
-## Planned next (spec numbers reserved)
+## Delivered
 
-| Spec | Item | Notes |
-|---|---|---|
-| `010-exclude-option` (target 0.4.1) | `--exclude` option, plus config file / `--path` [11] | Needed by users whose files only *look* like Python (Django/cookiecutter templates): since 0.4.0 an unparseable file exits 2, and the only workaround is moving it under a default-ignored directory. |
-| `010-exclude-option` | `check --require-baseline` [11] | Exit 2 when the root has no baseline folder, or has zero lockfiles while public symbols exist (silent pass today). Opt-in flag, default behavior unchanged. |
-| `010-exclude-option` | `.pre-commit-hooks.yaml` [11] | Ready-made hook definition; the reporter currently wraps `check` in their own script. |
+- Spec `010-exclude-and-require-baseline` (in 0.4.0): `--exclude`, `.pydocsync.json`, `--no-default-excludes`, `check --require-baseline`, `.pre-commit-hooks.yaml`, `node_modules`/`site-packages` default ignores (field-report items 6, 7 and 11).
+
+## Backlog from spec 010
+
+- **`--path`** (scan only listed files/dirs): rejected for now because `check` takes milliseconds on a whole project and `accept --file` / `refresh --file` already scope writes; revisit if very large monorepos need it.
+- **`--include` / negation patterns (`!x`)**: rejected because order-dependent rules are the classic gitignore trap; `--no-default-excludes` covers the real need (code in `pkg/build/`).
+- **TOML / `pyproject.toml` config, `--config PATH`, nested per-directory configs, environment-variable config**: JSON at `<root>/.pydocsync.json` only, because Python 3.10 has no stdlib TOML reader.
+- **Executing the pre-commit hook under the real `pre-commit` tool** in CI (only its manifest and entry command are tested).
 
 ## Considered and deferred
 

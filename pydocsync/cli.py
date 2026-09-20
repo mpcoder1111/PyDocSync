@@ -22,21 +22,26 @@ problems, the worst class wins (2) and both are printed.
 
 import argparse
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from pydocsync.ast_extract import SymbolRepresentation, load_symbols
 from pydocsync.baseline import BaselineManager
 from pydocsync.classifier import ASTChangeImpactClassifier
-from pydocsync.discovery import discover_python_files, is_path_excluded
+from pydocsync.config import Settings, load_settings
+from pydocsync.discovery import Discovery, discover, exclusion_reason
 from pydocsync.evaluate import Outcome, evaluate_symbol
 from pydocsync.fingerprint import generate_fingerprints
+from pydocsync.patterns import ExcludePattern
 from pydocsync.problems import (
     AmbiguousSymbolError,
     BaselineProblemError,
+    FileExcludedError,
     InitIncompleteError,
     InvalidArgumentError,
     Problem,
+    ProblemKind,
     PyDocSyncError,
     SourceProblemsError,
 )
@@ -60,6 +65,8 @@ class CheckReport:
         stale: Symbols whose documentation changed but whose baseline was not refreshed.
         files_checked: Number of files fully evaluated.
         symbols_checked: Number of symbols evaluated.
+        excluded_count: Paths removed by user exclusion rules (`--exclude`, `.pydocsync.json`).
+        unmatched: Exclusion patterns that matched no scanned path (a likely typo).
     """
 
     failures: list[SyncFailure] = field(default_factory=list)
@@ -67,6 +74,8 @@ class CheckReport:
     stale: list[StaleRecord] = field(default_factory=list)
     files_checked: int = 0
     symbols_checked: int = 0
+    excluded_count: int = 0
+    unmatched: list[ExcludePattern] = field(default_factory=list)
 
 
 def _require_reason(reason: str | None, command: str) -> str:
@@ -76,16 +85,22 @@ def _require_reason(reason: str | None, command: str) -> str:
     return reason.strip()
 
 
-def _resolve_file_argument(root: Path, file: str) -> Path | None:
+def _unmatched(settings: Settings, discovery: Discovery) -> list[ExcludePattern]:
+    """Return the user patterns that matched no visited path (probable typos)."""
+    return [pattern for pattern in settings.exclude if pattern.text not in discovery.matched_patterns]
+
+
+def _resolve_file_argument(root: Path, file: str, settings: Settings) -> tuple[Path | None, str | None]:
     """Resolve a `--file` argument to a scanned file path relative to root.
 
     Args:
         root: Resolved scan root.
         file: The user-supplied path (relative to root, or absolute).
+        settings: Effective settings, whose exclusion rules are applied to the file.
 
     Returns:
-        The path relative to root, or None if it does not exist, is not a `.py` file, or lies in
-        a directory that discovery excludes (so it would never have been scanned).
+        `(relative_path, None)` for a scannable file, `(None, None)` if it does not exist or is not
+        a `.py` file, or `(None, reason)` if the exclusion rules remove it from scanning.
 
     Raises:
         InvalidArgumentError: If the path lies outside the project root.
@@ -96,12 +111,20 @@ def _resolve_file_argument(root: Path, file: str) -> Path | None:
         rel = abs_path.relative_to(root)
     except ValueError:
         raise InvalidArgumentError(f"--file '{file}' is outside the project root '{root}'.") from None
-    if not abs_path.is_file() or abs_path.suffix != ".py" or is_path_excluded(rel):
-        return None
-    return rel
+    if not abs_path.is_file() or abs_path.suffix != ".py":
+        return None, None
+    reason = exclusion_reason(rel, settings.path_filter())
+    if reason is not None:
+        return None, reason
+    return rel, None
 
 
-def run_check(root_dir: Path | str = ".") -> CheckReport:
+def run_check(
+    root_dir: Path | str = ".",
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
+    require_baseline: bool | None = None,
+) -> CheckReport:
     """Evaluate every discovered Python file against its baseline.
 
     Files or lockfiles that cannot be evaluated are recorded as problems and evaluation continues,
@@ -109,21 +132,31 @@ def run_check(root_dir: Path | str = ".") -> CheckReport:
 
     Args:
         root_dir: Root directory of project or package to scan (default ".").
+        exclude: Extra exclusion patterns (added to `.pydocsync.json`).
+        default_excludes: False to scan the convention directories (`build`, `tests`, ...); None uses the config.
+        require_baseline: True to fail when no baseline exists; None uses the config.
 
     Returns:
-        A CheckReport with failures, problems, stale records and coverage counts.
+        A CheckReport with failures, problems, stale records, exclusion data and coverage counts.
 
     Raises:
+        ConfigError: If `.pydocsync.json` cannot be used.
+        InvalidArgumentError: If an exclusion pattern is invalid.
         FileNotFoundError: If root_dir does not exist.
         NotADirectoryError: If root_dir is not a directory.
         NoSourceFilesError: If zero Python source files are found to scan.
     """
     root = Path(root_dir).resolve()
+    settings = load_settings(root, exclude, default_excludes, require_baseline)
     mgr = BaselineManager(root_dir=root)
     classifier = ASTChangeImpactClassifier()
     report = CheckReport()
+    discovery = discover(root, settings.path_filter())
+    report.excluded_count = discovery.excluded_count
+    report.unmatched = _unmatched(settings, discovery)
+    public_symbols = 0
 
-    for rel_path in discover_python_files(root_dir=root):
+    for rel_path in discovery.files:
         symbols, problem = load_symbols(root / rel_path, rel_path)
         if problem is not None:
             report.problems.append(problem)
@@ -138,12 +171,24 @@ def run_check(root_dir: Path | str = ".") -> CheckReport:
         display = rel_path.as_posix()
         for sym in symbols:
             report.symbols_checked += 1
+            public_symbols += 1 if sym.is_public else 0
             current_fp = generate_fingerprints(sym)
             result = evaluate_symbol(sym, display, records.get(sym.key), current_fp, classifier)
             if result.outcome == Outcome.FLAG and result.failure is not None:
                 report.failures.append(result.failure)
             elif result.outcome == Outcome.STALE:
                 report.stale.append(StaleRecord(display, sym.qualname, sym.key, result.changed_planes))
+
+    if settings.require_baseline and public_symbols and not any(mgr.baseline_root.rglob("*.json")):
+        report.problems.append(
+            Problem(
+                kind=ProblemKind.BASELINE_MISSING,
+                path=".project/pydocsync",
+                line=None,
+                reason="no baseline exists (no lockfile under .project/pydocsync) but the project has public "
+                "symbols; run 'pydocsync init' to create it",
+            )
+        )
 
     report.problems.sort(key=lambda p: p.sort_key)
     return report
@@ -191,7 +236,15 @@ def _candidate(mgr: BaselineManager, rel: Path, occurrences: list[SymbolRepresen
     return Candidate(path=rel.as_posix(), lines=tuple(s.lineno for s in occurrences), drifting=drifting)
 
 
-def run_accept(symbol_qualname: str, reason: str, root_dir: Path | str = ".", file: str | None = None) -> AcceptResult | None:
+def run_accept(
+    symbol_qualname: str,
+    reason: str,
+    root_dir: Path | str = ".",
+    file: str | None = None,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
+    unmatched_out: list[ExcludePattern] | None = None,
+) -> AcceptResult | None:
     """Record review acknowledgment for every definition of a symbol in exactly one file.
 
     Args:
@@ -200,11 +253,16 @@ def run_accept(symbol_qualname: str, reason: str, root_dir: Path | str = ".", fi
         root_dir: Root directory of project (default ".").
         file: Optional file (relative to root) that selects among same-named symbols. When given,
             only that file is read.
+        exclude: Extra exclusion patterns (added to `.pydocsync.json`).
+        default_excludes: False to scan the convention directories; None uses the config.
+        unmatched_out: If given, receives the exclusion patterns that matched no scanned path.
 
     Returns:
         AcceptResult, or None if the symbol was not found.
 
     Raises:
+        ConfigError: If `.pydocsync.json` cannot be used.
+        FileExcludedError: If `file` is removed from scanning by the exclusion rules.
         FileNotFoundError: If root_dir does not exist.
         NotADirectoryError: If root_dir is not a directory.
         NoSourceFilesError: If no file is given and zero Python source files are found.
@@ -214,17 +272,23 @@ def run_accept(symbol_qualname: str, reason: str, root_dir: Path | str = ".", fi
         BaselineProblemError: If the chosen file's baseline lockfile is corrupt.
     """
     root = Path(root_dir).resolve()
+    settings = load_settings(root, exclude, default_excludes)
     mgr = BaselineManager(root_dir=root)
 
     if file is not None:
         if not root.is_dir():
             raise FileNotFoundError(f"Directory not found: '{root_dir}'")
-        selected = _resolve_file_argument(root, file)
+        selected, excluded_by = _resolve_file_argument(root, file, settings)
+        if excluded_by is not None:
+            raise FileExcludedError(file, excluded_by)
         if selected is None:
             return None
         targets = [selected]
     else:
-        targets = discover_python_files(root_dir=root)
+        discovery = discover(root, settings.path_filter())
+        if unmatched_out is not None:
+            unmatched_out.extend(_unmatched(settings, discovery))
+        targets = discovery.files
 
     problems: list[Problem] = []
     hits: dict[Path, list[SymbolRepresentation]] = {}
@@ -256,7 +320,12 @@ def run_accept(symbol_qualname: str, reason: str, root_dir: Path | str = ".", fi
 
 
 def accept_symbol_review(
-    symbol_qualname: str, reason: str, root_dir: Path | str = ".", file: str | None = None
+    symbol_qualname: str,
+    reason: str,
+    root_dir: Path | str = ".",
+    file: str | None = None,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
 ) -> bool:
     """Explicitly record review acknowledgment for a symbol.
 
@@ -265,6 +334,8 @@ def accept_symbol_review(
         reason: Mandatory human or AI agent audit rationale explaining why doc remains accurate.
         root_dir: Root directory of project (default ".").
         file: Optional file that selects among same-named symbols.
+        exclude: Extra exclusion patterns (added to `.pydocsync.json`).
+        default_excludes: False to scan the convention directories; None uses the config.
 
     Returns:
         True if symbol was found and baseline updated, False otherwise.
@@ -276,7 +347,10 @@ def accept_symbol_review(
         AmbiguousSymbolError: If the name is defined in more than one file and no `file` is given.
         SourceProblemsError: If a file that had to be read could not be evaluated.
     """
-    return run_accept(symbol_qualname, reason, root_dir=root_dir, file=file) is not None
+    outcome = run_accept(
+        symbol_qualname, reason, root_dir=root_dir, file=file, exclude=exclude, default_excludes=default_excludes
+    )
+    return outcome is not None
 
 
 def run_init(
@@ -284,6 +358,8 @@ def run_init(
     force: bool = False,
     reason: str | None = None,
     dry_run: bool = False,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
 ) -> InitResult:
     """Establish baselines for new symbols without erasing drift.
 
@@ -297,23 +373,29 @@ def run_init(
         force: Overwrite protected and stale records (requires `reason`).
         reason: Audit reason stored in each overwritten record.
         dry_run: Compute and return the outcome without writing anything.
+        exclude: Extra exclusion patterns (added to `.pydocsync.json`).
+        default_excludes: False to scan the convention directories; None uses the config.
 
     Returns:
         InitResult describing what was (or would be) baselined, protected, left stale or overwritten.
 
     Raises:
-        InvalidArgumentError: If `force` is set without a non-blank reason.
+        InvalidArgumentError: If `force` is set without a non-blank reason, or a pattern is invalid.
+        ConfigError: If `.pydocsync.json` cannot be used.
         FileNotFoundError: If root_dir does not exist.
         NotADirectoryError: If root_dir is not a directory.
         NoSourceFilesError: If zero Python source files are found to scan.
     """
     force_reason = _require_reason(reason, "init --force") if force else None
     root = Path(root_dir).resolve()
+    settings = load_settings(root, exclude, default_excludes)
     mgr = BaselineManager(root_dir=root)
     classifier = ASTChangeImpactClassifier()
     result = InitResult(dry_run=dry_run)
+    discovery = discover(root, settings.path_filter())
+    result.unmatched = _unmatched(settings, discovery)
 
-    for rel_path in discover_python_files(root_dir=root):
+    for rel_path in discovery.files:
         symbols, problem = load_symbols(root / rel_path, rel_path)
         if problem is not None:
             result.problems.append(problem)
@@ -386,6 +468,8 @@ def run_refresh(
     reason: str | None = None,
     symbol: str | None = None,
     file: str | None = None,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
 ) -> RefreshResult:
     """Re-record baseline records whose documentation was updated (stale records).
 
@@ -397,18 +481,23 @@ def run_refresh(
         reason: Mandatory audit reason stored in each refreshed record.
         symbol: Optional qualified symbol name to restrict the refresh to.
         file: Optional file (relative to root) to restrict the refresh to.
+        exclude: Extra exclusion patterns (added to `.pydocsync.json`).
+        default_excludes: False to scan the convention directories; None uses the config.
 
     Returns:
         RefreshResult listing refreshed symbols and any problems encountered.
 
     Raises:
-        InvalidArgumentError: If the reason is blank or `file` lies outside the project root.
+        InvalidArgumentError: If the reason is blank, `file` lies outside the project root or is
+            excluded, or a pattern is invalid.
+        ConfigError: If `.pydocsync.json` cannot be used.
         FileNotFoundError: If root_dir does not exist.
         NotADirectoryError: If root_dir is not a directory.
         NoSourceFilesError: If zero Python source files are found to scan.
     """
     audit_reason = _require_reason(reason, "refresh")
     root = Path(root_dir).resolve()
+    settings = load_settings(root, exclude, default_excludes)
     mgr = BaselineManager(root_dir=root)
     classifier = ASTChangeImpactClassifier()
     result = RefreshResult()
@@ -416,12 +505,16 @@ def run_refresh(
     if file is not None:
         if not root.is_dir():
             raise FileNotFoundError(f"Directory not found: '{root_dir}'")
-        selected = _resolve_file_argument(root, file)
+        selected, excluded_by = _resolve_file_argument(root, file, settings)
+        if excluded_by is not None:
+            raise InvalidArgumentError(f"--file '{file}' is excluded by {excluded_by}.")
         if selected is None:
             raise InvalidArgumentError(f"--file '{file}' was not found among the scanned Python files.")
         targets = [selected]
     else:
-        targets = discover_python_files(root_dir=root)
+        discovery = discover(root, settings.path_filter())
+        result.unmatched = _unmatched(settings, discovery)
+        targets = discovery.files
 
     for rel_path in targets:
         symbols, problem = load_symbols(root / rel_path, rel_path)
@@ -457,12 +550,42 @@ def _print_problems(problems: list[Problem], action: str) -> None:
     print(format_problems_report(problems, action=action), file=sys.stderr)
 
 
+def _print_unmatched(patterns: list[ExcludePattern]) -> None:
+    """Warn (stderr) about exclusion patterns that matched nothing: a probable typo."""
+    for pattern in patterns:
+        print(
+            f"PYDOCSYNC WARNING: exclude pattern '{pattern.text}' (from {pattern.origin}) matched no scanned path.",
+            file=sys.stderr,
+        )
+
+
+def _hint_options(args: argparse.Namespace) -> str:
+    """Scan options a suggested follow-up command needs so that it is accepted as-is."""
+    return " --no-default-excludes" if getattr(args, "no_default_excludes", False) else ""
+
+
+def _scan_kwargs(args: argparse.Namespace) -> dict[str, object]:
+    """Translate the shared scan options into keyword arguments for the run functions."""
+    return {
+        "exclude": tuple(args.exclude or ()),
+        "default_excludes": False if args.no_default_excludes else None,
+    }
+
+
 def _run_check_command(args: argparse.Namespace) -> int:
-    report = run_check(root_dir=args.root)
+    report = run_check(
+        root_dir=args.root,
+        require_baseline=True if args.require_baseline else None,
+        **_scan_kwargs(args),  # type: ignore[arg-type]
+    )
+    _print_unmatched(report.unmatched)
     if report.problems:
         _print_problems(report.problems, "check")
     if report.failures:
-        print(format_pydocsync001_report(report.failures, root_arg=args.root), file=sys.stderr)
+        print(
+            format_pydocsync001_report(report.failures, root_arg=args.root, extra_args=_hint_options(args)),
+            file=sys.stderr,
+        )
 
     if not report.problems and not report.failures:
         if report.stale:
@@ -470,8 +593,10 @@ def _run_check_command(args: argparse.Namespace) -> int:
         else:
             print("PYDOCSYNC: All symbols synchronized with baseline.")
         print(f"PYDOCSYNC: checked {report.files_checked} files, {report.symbols_checked} symbols.")
+    if report.excluded_count:
+        print(f"PYDOCSYNC: excluded by rules: {report.excluded_count} path(s).")
     if report.stale:
-        print(format_stale_notice(report.stale, root_arg=args.root))
+        print(format_stale_notice(report.stale, root_arg=args.root, extra_args=_hint_options(args)))
 
     if report.problems:
         return 2
@@ -488,7 +613,14 @@ def _run_check_command(args: argparse.Namespace) -> int:
 
 
 def _run_init_command(args: argparse.Namespace) -> int:
-    result = run_init(root_dir=args.root, force=args.force, reason=args.reason, dry_run=args.dry_run)
+    result = run_init(
+        root_dir=args.root,
+        force=args.force,
+        reason=args.reason,
+        dry_run=args.dry_run,
+        **_scan_kwargs(args),  # type: ignore[arg-type]
+    )
+    _print_unmatched(result.unmatched)
     verb = "Would initialize" if result.dry_run else "Initialized"
     print(f"PYDOCSYNC: {verb} baseline for {result.count} compliant symbols across project.")
     if result.overwritten:
@@ -515,7 +647,18 @@ def _run_init_command(args: argparse.Namespace) -> int:
 
 def _run_accept_command(args: argparse.Namespace) -> int:
     reason = _require_reason(args.reason, "accept")
-    outcome = run_accept(args.symbol, reason, root_dir=args.root, file=args.file)
+    unmatched: list[ExcludePattern] = []
+    try:
+        outcome = run_accept(
+            args.symbol,
+            reason,
+            root_dir=args.root,
+            file=args.file,
+            unmatched_out=unmatched,
+            **_scan_kwargs(args),  # type: ignore[arg-type]
+        )
+    finally:
+        _print_unmatched(unmatched)
     if outcome is None:
         print(f"PYDOCSYNC ERROR: Symbol '{args.symbol}' not found in project.", file=sys.stderr)
         return 1
@@ -528,7 +671,14 @@ def _run_accept_command(args: argparse.Namespace) -> int:
 
 
 def _run_refresh_command(args: argparse.Namespace) -> int:
-    result = run_refresh(root_dir=args.root, reason=args.reason, symbol=args.symbol, file=args.file)
+    result = run_refresh(
+        root_dir=args.root,
+        reason=args.reason,
+        symbol=args.symbol,
+        file=args.file,
+        **_scan_kwargs(args),  # type: ignore[arg-type]
+    )
+    _print_unmatched(result.unmatched)
     print(f"PYDOCSYNC: Refreshed baseline for {len(result.refreshed)} stale symbol(s).")
     for ref in result.refreshed:
         print(f"  {ref.file}: {ref.qualname}")
@@ -536,6 +686,23 @@ def _run_refresh_command(args: argparse.Namespace) -> int:
         _print_problems(result.problems, "refresh")
         return 2
     return 0
+
+
+EXCLUDE_HELP = (
+    "Exclude files/directories (repeatable; also '.pydocsync.json' key 'exclude'). Gitignore-style, relative to the "
+    "root: 'generated' (any depth), 'templates/' (directories), 'pkg/legacy/**' (anchored), '**/*_pb2.py'. "
+    "Negation '!', backslashes and '[..]' are rejected."
+)
+NO_DEFAULTS_HELP = (
+    "Also scan build, dist, _archive, migrations, tests and fixtures directories. Vendor/cache directories "
+    "(venv, node_modules, site-packages, __pycache__, dot-directories) are always skipped."
+)
+
+
+def _add_scan_options(sub: argparse.ArgumentParser) -> None:
+    """Add the options shared by every command that scans files."""
+    sub.add_argument("--exclude", action="append", default=None, metavar="PATTERN", help=EXCLUDE_HELP)
+    sub.add_argument("--no-default-excludes", action="store_true", help=NO_DEFAULTS_HELP)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -549,24 +716,33 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Exit 1 when documentation was updated but the baseline was not refreshed",
     )
+    check_p.add_argument(
+        "--require-baseline",
+        action="store_true",
+        help="Exit 2 when no baseline exists although the project has public symbols (also config 'require_baseline')",
+    )
+    _add_scan_options(check_p)
 
     init_p = subparsers.add_parser("init", help="Baseline new symbols; protect drifted records")
     init_p.add_argument("--root", default=".", help="Root project directory")
     init_p.add_argument("--force", action="store_true", help="Overwrite protected/stale records (requires --reason)")
     init_p.add_argument("--reason", default=None, help="Audit reason stored in each record overwritten by --force")
     init_p.add_argument("--dry-run", action="store_true", help="Show what would happen without writing anything")
+    _add_scan_options(init_p)
 
     accept_p = subparsers.add_parser("accept", help="Acknowledge reviewed symbol change")
     accept_p.add_argument("--symbol", required=True, help="Qualified symbol name (e.g. pkg.mod.func)")
     accept_p.add_argument("--reason", required=True, help="Mandatory human/agent audit reason")
     accept_p.add_argument("--file", default=None, help="File defining the symbol (required if the name is ambiguous)")
     accept_p.add_argument("--root", default=".", help="Root project directory")
+    _add_scan_options(accept_p)
 
     refresh_p = subparsers.add_parser("refresh", help="Record baselines whose documentation was updated")
     refresh_p.add_argument("--reason", default=None, help="Mandatory audit reason")
     refresh_p.add_argument("--symbol", default=None, help="Only refresh this qualified symbol name")
     refresh_p.add_argument("--file", default=None, help="Only refresh symbols in this file")
     refresh_p.add_argument("--root", default=".", help="Root project directory")
+    _add_scan_options(refresh_p)
     return parser
 
 
@@ -577,7 +753,12 @@ def _report_error(err: PyDocSyncError, args: argparse.Namespace) -> None:
     elif isinstance(err, BaselineProblemError):
         _print_problems([err.problem], "check")
     elif isinstance(err, AmbiguousSymbolError):
-        print(format_ambiguity_report(err.qualname, err.candidates, root_arg=getattr(args, "root", None)), file=sys.stderr)
+        print(
+            format_ambiguity_report(
+                err.qualname, err.candidates, root_arg=getattr(args, "root", None), extra_args=_hint_options(args)
+            ),
+            file=sys.stderr,
+        )
     else:
         print(f"PYDOCSYNC ERROR: {err}", file=sys.stderr)
 

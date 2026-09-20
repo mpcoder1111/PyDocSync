@@ -368,23 +368,80 @@ PyDocSync never reports "synchronized" for something it could not evaluate. Thes
 
 A module that was simply never baselined is not a problem. A successful run states what it covered (`checked 14 files, 212 symbols`). From Python, `check()` returns problems in `SyncResult.problems` instead of raising.
 
-If a file is intentionally not parseable (for example template files that look like Python), move it under a directory that is ignored by default until an `--exclude` option is available.
+If a file is intentionally not parseable (for example template files that look like Python), exclude it (see [Excluding Files](#excluding-files)).
 
 ### Default Ignored Directories
 
-PyDocSync automatically prunes standard vendor, artifact, and migration directories during traversal:
+PyDocSync prunes these directories at any depth during traversal:
 
 ```text
-.venv, venv, .git, __pycache__, build, dist, _archive, migrations, tests, fixtures
+Always skipped (vendor/cache):  venv, node_modules, site-packages, __pycache__, and every dot-directory (.git, .venv, ...)
+Skipped by default:             build, dist, _archive, migrations, tests, fixtures
 ```
+
+Real code that lives in a conventionally ignored directory (for example `pkg/build/`) can be checked with `--no-default-excludes` (or `"default_excludes": false` in the config file). That switches off only the second group; vendor/cache directories are never scanned.
+
+### Excluding Files
+
+For files that only *look* like Python (Django/cookiecutter templates, generated code), exclude them instead of moving them:
+
+```bash
+pydocsync check --exclude "templates/" --exclude "**/*_pb2.py"
+```
+
+`--exclude PATTERN` (repeatable) works the same on `check`, `init`, `accept` and `refresh`. To make it permanent, put the patterns in `<root>/.pydocsync.json`, which every command reads automatically (from `--root`, not from the current directory), so a bare `pydocsync check` gives the same result as your CI:
+
+```json
+{
+  "exclude": ["templates/", "**/*_pb2.py", "pkg/generated/**"],
+  "default_excludes": true,
+  "require_baseline": false
+}
+```
+
+All keys are optional; unknown keys or wrong types are an error (exit `2`), never silently ignored. Flags **add** to the config's patterns; nothing on the command line removes a config rule.
+
+**Pattern syntax** (a strict subset of gitignore, matched against the POSIX-style path relative to the root, case-sensitive):
+
+| Pattern | Matches |
+|---|---|
+| `generated` | any file or directory named `generated`, at any depth |
+| `templates/` | directories named `templates` (trailing `/` = directories only) |
+| `pkg/legacy` or `/pkg/legacy` | exactly that path from the root (a `/` inside the pattern anchors it) |
+| `*_pb2.py`, `mod?.py` | `*` = any characters except `/`, `?` = one character |
+| `pkg/**/gen`, `**/tmp`, `pkg/**` | `**` as a whole segment = zero or more directories (`pkg/**` = everything beneath `pkg`) |
+
+A pattern that matches a directory excludes everything beneath it. Anything else is **rejected with an error** (exit `2`) that quotes the pattern, rather than being reinterpreted: negation (`!x`), backslashes, `[..]`, `a**b`, `#x`, empty or whitespace-padded patterns, `.`/`..`.
+
+**Exclusions are always visible.** `check` prints `PYDOCSYNC: excluded by rules: N path(s).` whenever your rules removed something, and a pattern that matched nothing (usually a typo) produces `PYDOCSYNC WARNING: exclude pattern 'x' (from --exclude) matched no scanned path.` on stderr. `accept --file` on an excluded file says which rule excludes it.
+
+> [!WARNING]
+> Excluding real source code just to make `check` pass defeats the tool. Use exclusions for non-Python, generated or vendored files, and review them like any other change.
+
+### Strict Baseline Mode
+
+By default a project that was never baselined passes `check` (its documented symbols count as new). To make that an error, use `pydocsync check --require-baseline` (or `"require_baseline": true` in the config): if no baseline lockfile exists while the project has public symbols, `check` exits `2` with `BASELINE_MISSING` and tells you to run `pydocsync init`.
+
+### pre-commit
+
+```yaml
+repos:
+  - repo: https://github.com/mpcoder1111/PyDocSync
+    rev: v0.4.0
+    hooks:
+      - id: pydocsync-check
+        args: [--fail-on-stale, --require-baseline]   # optional
+```
+
+The hook (`.pre-commit-hooks.yaml`) runs `pydocsync check` on the whole project whenever Python files change (`pass_filenames: false`). It has been verified by running its entry command; it has not been executed under the pre-commit tool itself.
 
 ### CLI Exit Codes
 
 | Exit Code | Classification | Condition |
 |---|---|---|
 | **`0`** | `PASS` | All monitored symbols synchronized with baseline (a stale-baseline notice may be printed). |
-| **`1`** | `PYDOCSYNC001` | Review obligation detected (code changed without doc update), `accept` symbol not found, `init` protected drifted records, or stale baseline with `check --fail-on-stale` (`PYDOCSYNC003`). |
-| **`2`** | `ERROR` | A problem prevented a complete evaluation (corrupt baseline, unreadable/unparseable file), ambiguous `accept` symbol, CLI usage error, missing or blank audit reason, or zero Python source files found. When a run has both drift and problems, exit `2` wins and both are printed. |
+| **`1`** | `PYDOCSYNC001` | Review obligation detected (code changed without doc update), `accept` symbol not found or `accept --file` on an excluded file, `init` protected drifted records, or stale baseline with `check --fail-on-stale` (`PYDOCSYNC003`). |
+| **`2`** | `ERROR` | A problem prevented a complete evaluation (corrupt baseline, unreadable/unparseable file), ambiguous `accept` symbol, invalid `--exclude` pattern or `.pydocsync.json`, `check --require-baseline` with no baseline (`BASELINE_MISSING`), CLI usage error, missing or blank audit reason, or zero Python source files found (also when the exclusion rules removed them all). When a run has both drift and problems, exit `2` wins and both are printed. |
 
 ---
 
@@ -461,12 +518,12 @@ accept(
 ### Supported Public API Surface
 
 The stable public interface consists strictly of:
-- `check(root_dir=".") -> SyncResult` (with `problems`, `stale`, `files_checked`, `symbols_checked`)
+- `check(root_dir=".", *, exclude=(), default_excludes=None, require_baseline=None) -> SyncResult` (with `problems`, `stale`, `files_checked`, `symbols_checked`, `excluded_count`, `unmatched_excludes`); `init`, `init_report`, `accept` and `refresh` take the same `exclude` / `default_excludes` keyword arguments, and all of them read `.pydocsync.json` from `root_dir`
 - `init(root_dir=".", *, force=False, reason=None) -> int` and `init_report(root_dir=".", *, force=False, reason=None, dry_run=False) -> InitResult`
 - `accept(symbol_qualname, reason, root_dir=".", *, file=None) -> bool`
 - `refresh(root_dir=".", *, reason, symbol=None, file=None) -> int`
 - `SyncResult`, `SyncFailure`, `Problem`, `ProblemKind`, `StaleRecord`, `InitResult`, `SymbolRef`
-- `PyDocSyncError`, `AmbiguousSymbolError`, `InitIncompleteError`, `InvalidArgumentError`, `SourceProblemsError`
+- `PyDocSyncError`, `AmbiguousSymbolError`, `ConfigError`, `FileExcludedError`, `InitIncompleteError`, `InvalidArgumentError`, `SourceProblemsError`
 - `__version__`
 
 *Internal implementation modules (`ast_extract`, `fingerprint`, `classifier`, `baseline`, `report`) are private and subject to change.*
@@ -554,7 +611,7 @@ The following are **observed benchmark metrics**, not claims of universal accura
 - **`accept`** refuses an ambiguous name (exit `2`); use `--file`.
 - **`init`** protects drifted records (exit `1`); use `--force --reason` to reset deliberately.
 - New: `check` coverage line, stale-baseline notice and `--fail-on-stale`, `refresh`, `init --dry-run`, `init --force --reason`, `accept --file`.
-- Non-parseable files that are meant to be ignored: move them under an ignored directory for now; an `--exclude` option is planned for 0.4.1.
+- New: `--exclude PATTERN` (all commands) and `<root>/.pydocsync.json` for files that only look like Python; `--no-default-excludes`; `check --require-baseline`; a `pydocsync-check` pre-commit hook. `node_modules` and `site-packages` are now always skipped. Invalid patterns or config files exit `2` instead of being ignored, and `check` reports what your exclusions removed.
 
 ---
 
@@ -562,10 +619,11 @@ The following are **observed benchmark metrics**, not claims of universal accura
 
 ```text
 0   Clean / synchronized
-1   Synchronization review required, symbol not found, init protected drifted records,
-    or stale baseline with check --fail-on-stale
-2   A problem prevented a complete evaluation (corrupt baseline, unreadable/unparseable file),
-    ambiguous accept, or invalid usage. Wins over 1 when both occur.
+1   Synchronization review required, symbol not found (or accept --file on an excluded file),
+    init protected drifted records, or stale baseline with check --fail-on-stale
+2   A problem prevented a complete evaluation (corrupt baseline, unreadable/unparseable file,
+    missing baseline with --require-baseline), ambiguous accept, invalid --exclude pattern or
+    .pydocsync.json, or invalid usage. Wins over 1 when both occur.
 ```
 
 ---

@@ -51,6 +51,42 @@
       "status": "acknowledged",
       "types": "7c12240957c453748af33dd47741f97cc7a4e921a7a4028a91a3e0d17c673d37"
     },
+    "ConfigError": {
+      "api": "d22fc265b2d95ef5c12d3e1b2bef47677e2415839068680824354972d931a0b8",
+      "code": "3a5f8f0eed7ee8fa4a404921a98c286e51b04c9453c983ab5b3f2cffdc1d92e6",
+      "doc": "9b8db47d2247cd05d27914e9b33bf5c67b9dba3e26ad8298b0ee9243a0cbc7d2",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.755954+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "FileExcludedError": {
+      "api": "939809879a8e73354b23c5a7547bf59a8b6c64929f6892c9709df698c02eb406",
+      "code": "d13cd505f50d4ca7a111171915eefc03c6c407547b51a704cfe3c88b3e377e6c",
+      "doc": "77ae96647891dfa091d4a30019ee3efe5c89e2d9466b1806525d30173cf74bca",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.755954+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "FileExcludedError.__init__": {
+      "api": "b7d628ccb06cd8c685d6e2ff922984ba6d064647532c1380118ca029032b7201",
+      "code": "1e60f7edcd00454539f7972035fc9cd0765fafdbd00e60f1a967df44934b8f62",
+      "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.755954+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "9e67224800e31a8dbbe3e557f8af88d4a0172cab471fdf3fadf505bfcc798c8a"
+    },
     "InitIncompleteError": {
       "api": "aecf5dc05714dba15261cfeb8c4adfd900f8dabee09de68558f75595b8724cab",
       "code": "8e61675c722a592dfbf0a9e690e1871b54aa0bebd33095a4e6fcb5987a95bc33",
@@ -113,13 +149,13 @@
     },
     "ProblemKind": {
       "api": "d7eb05087f01bb4ce0db2b4728cf2e673ca397465195efcad994c9067461ffb2",
-      "code": "c913d24057986099db4aed7a0b1475fdc9352eaea8659e8162e99654d2a01ddc",
+      "code": "9c2bcaad6ef6e3b58eaec48a36c8022dbbc80cc4d6accc721d42202d31c948ab",
       "doc": "051a938493dafce089d91ff7e2f40827da38614659156cf5e79a14dd3313bff9",
       "example": null,
-      "last_reviewed_at": "2026-09-20T07:14:55.118730+00:00",
+      "last_reviewed_at": "2026-09-20T08:27:30.948208+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
-      "review_reason": "Initial baseline creation",
+      "review_reason": "Spec 010: reviewed; docstring still accurate. Added BASELINE_MISSING (check --require-baseline).",
       "status": "acknowledged",
       "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
     },

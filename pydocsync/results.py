@@ -14,6 +14,7 @@ without circular imports.
 
 from dataclasses import dataclass, field
 
+from pydocsync.patterns import ExcludePattern
 from pydocsync.problems import Problem
 
 
@@ -81,6 +82,7 @@ class InitResult:
         files_checked: Number of files evaluated.
         symbols_checked: Number of symbols evaluated.
         dry_run: True when nothing was written.
+        unmatched: Exclusion patterns that matched no scanned path (a likely typo).
     """
 
     baselined: list[SymbolRef] = field(default_factory=list)
@@ -92,6 +94,7 @@ class InitResult:
     files_checked: int = 0
     symbols_checked: int = 0
     dry_run: bool = False
+    unmatched: list[ExcludePattern] = field(default_factory=list)
 
     @property
     def count(self) -> int:
@@ -126,7 +129,9 @@ class RefreshResult:
     Attributes:
         refreshed: Stale symbols that were re-recorded.
         problems: Files or lockfiles that could not be evaluated.
+        unmatched: Exclusion patterns that matched no scanned path (a likely typo).
     """
 
     refreshed: list[SymbolRef] = field(default_factory=list)
     problems: list[Problem] = field(default_factory=list)
+    unmatched: list[ExcludePattern] = field(default_factory=list)

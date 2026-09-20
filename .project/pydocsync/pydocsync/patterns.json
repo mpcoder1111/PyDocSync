@@ -1,0 +1,67 @@
+{
+  "fingerprint_algorithm": "sha256",
+  "pydocsync_version": "0.4.0",
+  "schema_version": 1,
+  "symbols": {
+    "ExcludePattern": {
+      "api": "28d980eb3f2f5021dcc4ed1b1cf9a2a284fbb7125e09ca822ec55afb13ab6eec",
+      "code": "52650d4d37d7bf2d2566a7a32336e8fc76a83707b3e027032962a7ceabb4494d",
+      "doc": "fc7deb66b96fbb76b5c6dfd07ccc73160f5382252f7c290d3292c0ad069349c1",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.742123+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "ExcludePattern.matches": {
+      "api": "a562d5d71b64e7f857f6f1a32cda937c2f12325a36a73c56edb0c9dc30d70ef4",
+      "code": "57eb998ba4130db7d92bab579c5760c5a4a36ba93a72ddc2e2336db08b9b9f7f",
+      "doc": "1b67128f70b9ea27d35241a700546234b9b2734a6bbb5bfa716b83ce17aa6d6b",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.742123+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "68b5cbb2d0888e18f96b62aefee286a796539a83869942751dd641d641e12e42"
+    },
+    "_error": {
+      "api": "d58e19eab34c232cbc0dfbb9ce76247162fec203dd0120667d877217e0002b27",
+      "code": "572c9fc3ab759dcc84d3e163dfdfb7e2c542d9971e13279be7b661bdcd9ef2d2",
+      "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.742123+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "341681be712800777e02fe75d54b0c0f9b1546e3156340e87f413a41f135129c"
+    },
+    "_translate_segment": {
+      "api": "0966802a1d9b473a1159148f0f1b40d6767b2d3e00cdd9d5b565161118ccfbdb",
+      "code": "bac6c7ddb327abea871ed1fa67d6da6cc69b58255c3a9220adef6384cbb2f437",
+      "doc": "abe4590389662685e00f83790221578951c618b8b031d2f570e2bd27ddbd1c4e",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.744136+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "866f15a0f985812c752a1f607688ba5e5aeb17fe875c2c2b67854a8f03193bb1"
+    },
+    "compile_pattern": {
+      "api": "c38113420a8a96e32fef96434bd6a6b5372e78145e2d5a494d40c7d4182efa7a",
+      "code": "7fccc654e663163d408b8e54eaaed2a2c69a4632e396f0c143af3fce049b438c",
+      "doc": "0835efa1cbc008e9a7edf1d306541ca35ef7c9fee6b0c41f33daac3b7e8ffc76",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T08:27:32.745888+00:00",
+      "raise_detail": "8ef0b6a5a08b5af321cb2622f5f7fdfa5a556ca00b8a339fec59dac2f43e5b0d",
+      "raise_type": "22e5e64f91018e9d2f23feedb078ccfddee7b6dc0460815f4262e3cd02005100",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "c49075eb9f3c8979fcd5106c70bc2e7878567ae9e53b055a19a48b4ecc989f64"
+    }
+  }
+}

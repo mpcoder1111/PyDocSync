@@ -117,7 +117,7 @@ pydocsync check
 - **Exit Codes & Inspection**:
   - `0`: Nothing requires review. The output states coverage (`checked N files, M symbols`); a stale-baseline notice may follow (see `refresh`).
   - `1`: Synchronization review required (`PYDOCSYNC001`), a symbol was not found (`accept`), `init` protected drifted records, or a stale baseline with `check --fail-on-stale` (`PYDOCSYNC003`). **Always inspect the actual diagnostic output before deciding on remediation.**
-  - `2`: A **problem** prevented a complete evaluation (corrupt/unsupported baseline lockfile, unreadable or unparseable Python file such as `SyntaxError line 12`), an ambiguous `accept`, invalid arguments, or a blank audit reason. When drift and problems occur together, exit `2` wins and both are printed. Fix the problems first: they mean part of the project was **not** checked.
+  - `2`: A **problem** prevented a complete evaluation (corrupt/unsupported baseline lockfile, unreadable or unparseable Python file such as `SyntaxError line 12`, no baseline with `--require-baseline`), an ambiguous `accept`, an invalid `--exclude` pattern or `.pydocsync.json`, invalid arguments, or a blank audit reason. When drift and problems occur together, exit `2` wins and both are printed. Fix the problems first: they mean part of the project was **not** checked.
 
 ### `pydocsync accept`
 ```powershell
@@ -127,6 +127,17 @@ pydocsync accept --symbol <qualname> --reason "<rationale>"
 - **Requirements**: Requires a non-empty, descriptive `--reason`. Blank or whitespace reasons are rejected with exit code `2`.
 - **Same name in several files**: `accept` refuses to guess (exit `2`) and prints one ready-to-run command per candidate. Add `--file <path>` (relative to the root). The `PYDOCSYNC001` hint already includes `--file`; use it verbatim. A name defined more than once inside one file (redefinition, `@overload`, property getter/setter) is acknowledged as a group and the count is printed.
 - **Prohibition**: Never use `accept` blindly to silence a check without verifying docstring accuracy.
+
+### Excluding files (`--exclude`, `.pydocsync.json`)
+```powershell
+pydocsync check --exclude "templates/" --exclude "**/*_pb2.py"
+```
+- **When**: a file only *looks* like Python (template, generated code) and makes `check` fail with `SyntaxError`, or vendored/generated code should not be checked. Add the pattern to `<root>/.pydocsync.json` (`{"exclude": ["templates/"]}`) so every later run, including a bare `pydocsync check`, applies it. **Never delete or "fix" such a file to get past the error.**
+- **Syntax** (strict; anything else is rejected with exit `2` and the pattern quoted): `name` (any depth), `dir/` (directories only), `a/b` or `/a/b` (anchored), `*`, `?`, `**` as a whole segment. No `!`, backslashes or `[..]`.
+- **Guardrail**: do **not** exclude real source code to make `check` pass. Every exclusion is visible in the output (`excluded by rules: N path(s)`) and a pattern that matches nothing prints a warning (fix the typo). Report new exclusions to the human.
+- **Default ignores**: `venv`, `node_modules`, `site-packages`, `__pycache__` and dot-directories are always skipped; `build`, `dist`, `_archive`, `migrations`, `tests`, `fixtures` are skipped unless `--no-default-excludes` (or `"default_excludes": false`) is used. If real code lives in one of them and its `accept`/`refresh` hint mentions `--no-default-excludes`, keep that flag.
+- **`accept --file` on an excluded file** exits `1` and names the rule that excludes it.
+- **`--require-baseline`** (or `"require_baseline": true`): `check` exits `2` with `BASELINE_MISSING` when no baseline exists although public symbols do; run `pydocsync init` (once, to onboard) and commit the baseline.
 
 ### `pydocsync refresh`
 ```powershell

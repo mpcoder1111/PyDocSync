@@ -60,7 +60,7 @@ Weak tests found and fixed during red-bar validation: four tests initially passe
 | Consumer `SKILL.md` | Updated: version, `init` protection, exit codes/problems, `accept --file`, new `refresh`, API and exceptions |
 | Reply to the reporter | Not required (owner) |
 
-Still not done, by design: commit, tag `v0.4.0`, wheel, README install instructions and status badge (still 0.3.0 text until release), spec 010.
+Still not done, by design: tag `v0.4.0`, wheel, README install instructions and status badge (still 0.3.0 text until release). Update: the commit was made afterwards, and `--exclude` / `--require-baseline` were delivered in 0.4.0 by spec 010.
 
 ## 6. Cleanup
 

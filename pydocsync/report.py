@@ -33,17 +33,23 @@ def _root_suffix(root_arg: str | None) -> str:
     return ""
 
 
-def _accept_command(qualname: str, file_path: str, root_arg: str | None) -> str:
-    return f'pydocsync accept --symbol {qualname} --reason "<audit reason>" --file {file_path}{_root_suffix(root_arg)}'
+def _accept_command(qualname: str, file_path: str, root_arg: str | None, extra_args: str = "") -> str:
+    return (
+        f'pydocsync accept --symbol {qualname} --reason "<audit reason>" --file {file_path}'
+        f"{_root_suffix(root_arg)}{extra_args}"
+    )
 
 
-def format_pydocsync001_report(failures: list[SyncFailure], root_arg: str | None = None) -> str:
+def format_pydocsync001_report(
+    failures: list[SyncFailure], root_arg: str | None = None, extra_args: str = ""
+) -> str:
     """Format failures into machine-readable PYDOCSYNC001 report.
 
     Args:
         failures: Review obligations to report.
         root_arg: The `--root` value used for the run, echoed in the suggested commands
             when it is not the default.
+        extra_args: Scan options (e.g. ` --no-default-excludes`) the suggested commands need in order to work.
 
     Returns:
         The report text.
@@ -69,7 +75,7 @@ def format_pydocsync001_report(failures: list[SyncFailure], root_arg: str | None
             f"Reason:     {fail.rule_result.reason}",
             f"Action:     Update docstring for '{sym.qualname}', or if documentation",
             "            remains 100% accurate, acknowledge via:",
-            f"            {_accept_command(sym.qualname, fail.file_path, root_arg)}",
+            f"            {_accept_command(sym.qualname, fail.file_path, root_arg, extra_args)}",
             "-" * 70,
         ]
         blocks.append("\n".join(block))
@@ -98,12 +104,13 @@ def format_problems_report(problems: list[Problem], action: str = "check") -> st
     return "\n".join(lines)
 
 
-def format_stale_notice(stale: list[StaleRecord], root_arg: str | None = None) -> str:
+def format_stale_notice(stale: list[StaleRecord], root_arg: str | None = None, extra_args: str = "") -> str:
     """Format the notice for symbols whose documentation changed but whose baseline was not refreshed.
 
     Args:
         stale: Stale records, reported sorted by file and key.
         root_arg: The `--root` value used for the run.
+        extra_args: Scan options the suggested command needs (e.g. ` --no-default-excludes`).
 
     Returns:
         The notice text.
@@ -116,18 +123,21 @@ def format_stale_notice(stale: list[StaleRecord], root_arg: str | None = None) -
         label = rec.qualname if rec.key == rec.qualname else f"{rec.qualname} (definition {rec.key.rsplit('#', 1)[1]})"
         lines.append(f"  {rec.file}: {label} (changed: {', '.join(rec.changed_planes)})")
     lines.append(
-        f'  Record them with: pydocsync refresh --reason "<why the docs match the code>"{_root_suffix(root_arg)}'
+        f'  Record them with: pydocsync refresh --reason "<why the docs match the code>"{_root_suffix(root_arg)}{extra_args}'
     )
     return "\n".join(lines)
 
 
-def format_ambiguity_report(qualname: str, candidates: list[Candidate], root_arg: str | None = None) -> str:
+def format_ambiguity_report(
+    qualname: str, candidates: list[Candidate], root_arg: str | None = None, extra_args: str = ""
+) -> str:
     """Format the error for an `accept` request whose symbol name exists in several files.
 
     Args:
         qualname: The requested qualified symbol name.
         candidates: Every file that defines it.
         root_arg: The `--root` value used for the run.
+        extra_args: Scan options the suggested commands need (e.g. ` --no-default-excludes`).
 
     Returns:
         The report text, ending with one ready-to-run command per candidate file.
@@ -143,5 +153,5 @@ def format_ambiguity_report(qualname: str, candidates: list[Candidate], root_arg
         lines.append(f"  {cand.path}:{line_list}  ({state})")
     lines.append("Re-run with the file you mean:")
     for cand in ordered:
-        lines.append(f"  {_accept_command(qualname, cand.path, root_arg)}")
+        lines.append(f"  {_accept_command(qualname, cand.path, root_arg, extra_args)}")
     return "\n".join(lines)

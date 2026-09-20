@@ -1,0 +1,15 @@
+# pre-commit hook definitions for PyDocSync (https://pre-commit.com).
+# Usage in a consumer's .pre-commit-config.yaml:
+#   repos:
+#     - repo: https://github.com/mpcoder1111/PyDocSync
+#       rev: v0.4.0
+#       hooks:
+#         - id: pydocsync-check
+#           args: [--fail-on-stale, --require-baseline]   # optional; also --exclude PATTERN
+- id: pydocsync-check
+  name: pydocsync check
+  description: Fail when Python code changed without a documentation review (PyDocSync).
+  entry: pydocsync check
+  language: python
+  types: [python]
+  pass_filenames: false

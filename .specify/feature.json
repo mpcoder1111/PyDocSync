@@ -1,3 +1,3 @@
 {
-  "feature_directory": "specs/009-silent-false-pass-hardening"
+  "feature_directory": "specs/010-exclude-and-require-baseline"
 }

@@ -14,6 +14,7 @@ file never stops the run. `init` and `accept` keep their simple return types and
 `PyDocSyncError` (carrying structured data) whenever the CLI would not exit 0.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -35,6 +36,8 @@ class SyncResult:
         stale: Symbols passing `check` whose baseline record is out of date (see `refresh`).
         files_checked: Number of files fully evaluated.
         symbols_checked: Number of symbols evaluated.
+        excluded_count: Paths removed by exclusion rules (`exclude`, `.pydocsync.json`).
+        unmatched_excludes: Exclusion patterns that matched no scanned path (a likely typo).
     """
 
     is_synchronized: bool
@@ -44,6 +47,8 @@ class SyncResult:
     stale: list[StaleRecord] = field(default_factory=list)
     files_checked: int = 0
     symbols_checked: int = 0
+    excluded_count: int = 0
+    unmatched_excludes: list[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Derive `failure_count` and `is_synchronized` so they can never disagree with the data.
@@ -55,7 +60,13 @@ class SyncResult:
         self.is_synchronized = self.failure_count == 0 and not self.problems
 
 
-def check(root_dir: Path | str = ".") -> SyncResult:
+def check(
+    root_dir: Path | str = ".",
+    *,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
+    require_baseline: bool | None = None,
+) -> SyncResult:
     """Scan working tree against baseline lockfiles and return structured SyncResult.
 
     Files or lockfiles that cannot be evaluated are returned in `problems`; the run is never
@@ -63,16 +74,23 @@ def check(root_dir: Path | str = ".") -> SyncResult:
 
     Args:
         root_dir: Root directory of project or package to scan (default ".").
+        exclude: Extra exclusion patterns, added to those in `<root>/.pydocsync.json`.
+        default_excludes: False to also scan `build`, `tests`, ... directories; None uses the config.
+        require_baseline: True to report BASELINE_MISSING when no baseline exists; None uses the config.
 
     Returns:
-        SyncResult with failures, problems, stale records and coverage counts.
+        SyncResult with failures, problems, stale records, exclusion data and coverage counts.
 
     Raises:
+        ConfigError: If `.pydocsync.json` cannot be used.
+        InvalidArgumentError: If an exclusion pattern is invalid.
         FileNotFoundError: If root_dir does not exist.
         NotADirectoryError: If root_dir is not a directory.
         NoSourceFilesError: If zero Python source files are found to scan.
     """
-    report = run_check(root_dir=root_dir)
+    report = run_check(
+        root_dir=root_dir, exclude=exclude, default_excludes=default_excludes, require_baseline=require_baseline
+    )
     return SyncResult(
         is_synchronized=False,
         failures=report.failures,
@@ -80,6 +98,8 @@ def check(root_dir: Path | str = ".") -> SyncResult:
         stale=report.stale,
         files_checked=report.files_checked,
         symbols_checked=report.symbols_checked,
+        excluded_count=report.excluded_count,
+        unmatched_excludes=[pattern.text for pattern in report.unmatched],
     )
 
 
@@ -89,6 +109,8 @@ def init_report(
     force: bool = False,
     reason: str | None = None,
     dry_run: bool = False,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
 ) -> InitResult:
     """Baseline new symbols and return exactly what happened, without raising for protection.
 
@@ -97,6 +119,8 @@ def init_report(
         force: Overwrite protected and stale records (requires `reason`).
         reason: Audit reason stored in each record overwritten by `force`.
         dry_run: Compute the outcome without writing anything.
+        exclude: Extra exclusion patterns, added to those in `<root>/.pydocsync.json`.
+        default_excludes: False to also scan `build`, `tests`, ... directories; None uses the config.
 
     Returns:
         InitResult listing baselined, protected, stale and overwritten symbols and any problems.
@@ -107,10 +131,24 @@ def init_report(
         NotADirectoryError: If root_dir is not a directory.
         NoSourceFilesError: If zero Python source files are found to scan.
     """
-    return run_init(root_dir=root_dir, force=force, reason=reason, dry_run=dry_run)
+    return run_init(
+        root_dir=root_dir,
+        force=force,
+        reason=reason,
+        dry_run=dry_run,
+        exclude=exclude,
+        default_excludes=default_excludes,
+    )
 
 
-def init(root_dir: Path | str = ".", *, force: bool = False, reason: str | None = None) -> int:
+def init(
+    root_dir: Path | str = ".",
+    *,
+    force: bool = False,
+    reason: str | None = None,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
+) -> int:
     """Baseline new symbols; protect drifted records.
 
     New symbols are always written first. If any drifted record was protected or any problem
@@ -120,6 +158,8 @@ def init(root_dir: Path | str = ".", *, force: bool = False, reason: str | None 
         root_dir: Root directory of project or package to initialize (default ".").
         force: Overwrite protected and stale records (requires `reason`).
         reason: Audit reason stored in each record overwritten by `force`.
+        exclude: Extra exclusion patterns, added to those in `<root>/.pydocsync.json`.
+        default_excludes: False to also scan `build`, `tests`, ... directories; None uses the config.
 
     Returns:
         Integer count of symbols covered by a matching baseline record.
@@ -128,13 +168,23 @@ def init(root_dir: Path | str = ".", *, force: bool = False, reason: str | None 
         InitIncompleteError: If records were protected or problems were found.
         InvalidArgumentError: If `force` is set without a non-blank reason.
     """
-    result = run_init(root_dir=root_dir, force=force, reason=reason)
+    result = run_init(
+        root_dir=root_dir, force=force, reason=reason, exclude=exclude, default_excludes=default_excludes
+    )
     if result.protected or result.problems:
         raise InitIncompleteError(result)
     return result.count
 
 
-def accept(symbol_qualname: str, reason: str, root_dir: Path | str = ".", *, file: str | None = None) -> bool:
+def accept(
+    symbol_qualname: str,
+    reason: str,
+    root_dir: Path | str = ".",
+    *,
+    file: str | None = None,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
+) -> bool:
     """Explicitly record review acknowledgment for a symbol change.
 
     Args:
@@ -143,15 +193,25 @@ def accept(symbol_qualname: str, reason: str, root_dir: Path | str = ".", *, fil
         root_dir: Root directory of project (default ".").
         file: File defining the symbol; required when the name exists in several files. When
             given, only that file is read.
+        exclude: Extra exclusion patterns, added to those in `<root>/.pydocsync.json`.
+        default_excludes: False to also scan `build`, `tests`, ... directories; None uses the config.
 
     Returns:
         True if symbol was found and baseline updated, False otherwise.
 
     Raises:
+        FileExcludedError: If `file` is removed from scanning by the exclusion rules.
         AmbiguousSymbolError: If the name is defined in more than one file and no `file` is given.
         SourceProblemsError: If a file that had to be read could not be evaluated.
     """
-    return accept_symbol_review(symbol_qualname=symbol_qualname, reason=reason, root_dir=root_dir, file=file)
+    return accept_symbol_review(
+        symbol_qualname=symbol_qualname,
+        reason=reason,
+        root_dir=root_dir,
+        file=file,
+        exclude=exclude,
+        default_excludes=default_excludes,
+    )
 
 
 def refresh(
@@ -160,6 +220,8 @@ def refresh(
     reason: str,
     symbol: str | None = None,
     file: str | None = None,
+    exclude: Sequence[str] = (),
+    default_excludes: bool | None = None,
 ) -> int:
     """Re-record baselines whose documentation was updated (stale records).
 
@@ -170,6 +232,8 @@ def refresh(
         reason: Mandatory audit reason stored in each refreshed record.
         symbol: Optional qualified symbol name to restrict the refresh to.
         file: Optional file (relative to root) to restrict the refresh to.
+        exclude: Extra exclusion patterns, added to those in `<root>/.pydocsync.json`.
+        default_excludes: False to also scan `build`, `tests`, ... directories; None uses the config.
 
     Returns:
         Number of stale records re-recorded.
@@ -178,7 +242,14 @@ def refresh(
         InvalidArgumentError: If the reason is blank or `file` is outside the project root.
         SourceProblemsError: If a file or lockfile could not be evaluated (after refreshing the rest).
     """
-    result = run_refresh(root_dir=root_dir, reason=reason, symbol=symbol, file=file)
+    result = run_refresh(
+        root_dir=root_dir,
+        reason=reason,
+        symbol=symbol,
+        file=file,
+        exclude=exclude,
+        default_excludes=default_excludes,
+    )
     if result.problems:
         raise SourceProblemsError(result.problems)
     return len(result.refreshed)

@@ -1,8 +1,10 @@
 """PyDocSync: Deterministic Representation Synchronization for AI-Assisted Codebases.
 
 Public API:
-- `check(root_dir=".") -> SyncResult`: Scan codebase against baseline lockfiles. Problems (unreadable
-  files, corrupt baselines) and stale records are returned as data in the result.
+- `check(root_dir=".", *, exclude=(), default_excludes=None, require_baseline=None) -> SyncResult`: Scan codebase
+  against baseline lockfiles. Problems (unreadable files, corrupt baselines) and stale records are returned as
+  data in the result. `exclude`, `default_excludes` and `require_baseline` mirror the CLI and the
+  `<root>/.pydocsync.json` config file, which is read by default.
 - `init(root_dir=".", *, force=False, reason=None) -> int`: Baseline new symbols; protects drifted records
   (raises `InitIncompleteError` carrying the details). `init_report(...)` returns the details without raising.
 - `accept(symbol_qualname, reason, root_dir=".", *, file=None) -> bool`: Acknowledge reviewed symbol change.
@@ -10,7 +12,8 @@ Public API:
 - `SyncResult`: Typed outcome of a synchronization scan.
 - `SyncFailure`: Structured representation failure envelope.
 - `Problem`, `ProblemKind`, `StaleRecord`, `InitResult`: Structured results.
-- `PyDocSyncError` and subclasses (`AmbiguousSymbolError`, `InitIncompleteError`, `SourceProblemsError`):
+- `PyDocSyncError` and subclasses (`AmbiguousSymbolError`, `InitIncompleteError`, `SourceProblemsError`,
+  `ConfigError`, `FileExcludedError`):
   typed failures carrying an `exit_code`; none is a `ValueError`.
 """
 
@@ -18,6 +21,8 @@ from pydocsync._version import __version__
 from pydocsync.api import SyncResult, accept, check, init, init_report, refresh
 from pydocsync.problems import (
     AmbiguousSymbolError,
+    ConfigError,
+    FileExcludedError,
     InitIncompleteError,
     InvalidArgumentError,
     Problem,
@@ -44,6 +49,8 @@ __all__ = [
     "SymbolRef",
     "PyDocSyncError",
     "AmbiguousSymbolError",
+    "ConfigError",
+    "FileExcludedError",
     "InitIncompleteError",
     "InvalidArgumentError",
     "SourceProblemsError",

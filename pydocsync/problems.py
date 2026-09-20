@@ -30,6 +30,7 @@ class ProblemKind(str, Enum):
     BASELINE_CORRUPT = "BASELINE_CORRUPT"
     BASELINE_UNSUPPORTED_VERSION = "BASELINE_UNSUPPORTED_VERSION"
     BASELINE_UNREADABLE = "BASELINE_UNREADABLE"
+    BASELINE_MISSING = "BASELINE_MISSING"
     SOURCE_UNPARSEABLE = "SOURCE_UNPARSEABLE"
     SOURCE_UNREADABLE = "SOURCE_UNREADABLE"
 
@@ -68,6 +69,30 @@ class PyDocSyncError(Exception):
 
 class InvalidArgumentError(PyDocSyncError):
     """A command was invoked with arguments PyDocSync cannot act on (exit 2)."""
+
+
+class ConfigError(PyDocSyncError):
+    """The `.pydocsync.json` config file cannot be used (exit 2).
+
+    A config that cannot be read must never be treated as "no exclusions": that would silently
+    change what is checked. The message names the file and the reason.
+    """
+
+
+class FileExcludedError(PyDocSyncError):
+    """A `--file` argument names a file that the exclusion rules remove from scanning (exit 1).
+
+    Attributes:
+        path: The file as given by the caller.
+        reason: The rule that excludes it (default directory or pattern with its origin).
+    """
+
+    exit_code = 1
+
+    def __init__(self, path: str, reason: str) -> None:
+        super().__init__(f"--file '{path}' is excluded by {reason}.")
+        self.path = path
+        self.reason = reason
 
 
 class BaselineProblemError(PyDocSyncError):

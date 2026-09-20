@@ -28,7 +28,7 @@ def test_public_api_exports():
         "refresh",
         "SyncResult",
         "SyncFailure",
-        # Added by spec 009 (structured results and typed errors):
+        # Added by specs 009/010 (structured results, typed errors, config/exclusion errors):
         "Problem",
         "ProblemKind",
         "StaleRecord",
@@ -36,6 +36,8 @@ def test_public_api_exports():
         "SymbolRef",
         "PyDocSyncError",
         "AmbiguousSymbolError",
+        "ConfigError",
+        "FileExcludedError",
         "InitIncompleteError",
         "InvalidArgumentError",
         "SourceProblemsError",
