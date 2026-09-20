@@ -20,7 +20,7 @@ PyDocSync solves this by computing multi-representation AST fingerprints and eva
 ## 2. Project Information
 
 - **Official GitHub Repository**: [`https://github.com/mpcoder1111/PyDocSync`](https://github.com/mpcoder1111/PyDocSync)
-- **Current Version**: `0.3.0 Experimental`
+- **Current Version**: `0.4.0 Experimental`
 - **Supported Python**: Python `3.10+` (zero runtime dependencies, standard library only)
 
 ---
@@ -104,9 +104,10 @@ PASS (Exit 0)                              FAIL (Exit 1)
 ```powershell
 pydocsync init
 ```
-- **Purpose**: Scans the codebase and creates or updates baseline lockfiles for all compliant symbols.
-- **When to use**: **Only** when onboarding a newly authored module, when the project has no valid baseline, or when deliberately establishing/re-establishing a baseline as an explicit maintenance operation.
-- **Safety Invariant**: **NEVER run `init` to fix a `pydocsync check` failure.** Running `init` on modified code overwrites the baseline lockfile and destroys change-detection capabilities.
+- **Purpose**: Baselines **new** symbols. Records that `check` currently flags are **protected** (left untouched, listed, exit `1`); records whose documentation was updated (*stale*) are left untouched and reported (use `refresh`). A corrupt lockfile is never overwritten (exit `2`).
+- **When to use**: **Only** when onboarding a newly authored module, or when the project has no valid baseline.
+- **Safety Invariant**: **NEVER run `init` (or `init --force`) to fix a `pydocsync check` failure.** The right responses are: update the docstring, or `accept` with a reason. `init --force --reason "<why>"` exists only for a deliberate, audited baseline reset; the reason is stored in each overwritten record.
+- **Preview**: `pydocsync init --dry-run` shows what would be baselined/protected and writes nothing.
 
 ### `pydocsync check`
 ```powershell
@@ -114,9 +115,9 @@ pydocsync check
 ```
 - **Purpose**: Compares current AST fingerprints against `.project/pydocsync/` baselines.
 - **Exit Codes & Inspection**:
-  - `0`: All symbols are synchronized.
-  - `1`: Synchronization review required (`PYDOCSYNC001`), or a target symbol was not found. **Always inspect the actual diagnostic output before deciding on remediation.**
-  - `2`: Invalid CLI arguments, syntax error, or rejected blank audit reason.
+  - `0`: Nothing requires review. The output states coverage (`checked N files, M symbols`); a stale-baseline notice may follow (see `refresh`).
+  - `1`: Synchronization review required (`PYDOCSYNC001`), a symbol was not found (`accept`), `init` protected drifted records, or a stale baseline with `check --fail-on-stale` (`PYDOCSYNC003`). **Always inspect the actual diagnostic output before deciding on remediation.**
+  - `2`: A **problem** prevented a complete evaluation (corrupt/unsupported baseline lockfile, unreadable or unparseable Python file such as `SyntaxError line 12`), an ambiguous `accept`, invalid arguments, or a blank audit reason. When drift and problems occur together, exit `2` wins and both are printed. Fix the problems first: they mean part of the project was **not** checked.
 
 ### `pydocsync accept`
 ```powershell
@@ -124,7 +125,17 @@ pydocsync accept --symbol <qualname> --reason "<rationale>"
 ```
 - **Purpose**: Explicitly records that a human or AI agent reviewed the changed symbol and verified that the existing documentation remains 100% accurate.
 - **Requirements**: Requires a non-empty, descriptive `--reason`. Blank or whitespace reasons are rejected with exit code `2`.
+- **Same name in several files**: `accept` refuses to guess (exit `2`) and prints one ready-to-run command per candidate. Add `--file <path>` (relative to the root). The `PYDOCSYNC001` hint already includes `--file`; use it verbatim. A name defined more than once inside one file (redefinition, `@overload`, property getter/setter) is acknowledged as a group and the count is printed.
 - **Prohibition**: Never use `accept` blindly to silence a check without verifying docstring accuracy.
+
+### `pydocsync refresh`
+```powershell
+pydocsync refresh --reason "<why the updated docs match the code>" [--symbol <qualname>] [--file <path>]
+```
+- **Purpose**: After you change code **and** its docstring together, `check` passes, but the baseline still holds the old docstring, so later code-only changes to that symbol would slip through. `check` lists these as *stale* (`N symbol(s) have updated documentation not yet recorded in the baseline`). `refresh` records exactly those symbols.
+- **Safety**: It never touches a record that `check` flags and never baselines new symbols. Requires a non-blank `--reason`. Run it after verifying the docs match the code, then commit the updated baseline.
+- **CI**: `pydocsync check --fail-on-stale` exits `1` until stale records are refreshed.
+- **Known limit**: until `refresh` has been run, a further code-only change cannot be told apart from the earlier documented one; do not ignore the stale notice.
 
 ---
 
@@ -133,7 +144,7 @@ pydocsync accept --symbol <qualname> --reason "<rationale>"
 For embedding in tools, background tasks, or custom MCP verification scripts:
 
 ```python
-from pydocsync import check, init, accept, SyncResult, SyncFailure
+from pydocsync import check, init, accept, refresh, SyncResult, SyncFailure
 
 # Run check programmatically
 result: SyncResult = check(root_dir=".")
@@ -144,13 +155,23 @@ if not result.is_synchronized:
         print(f"  - {failure.symbol.qualname} in {failure.file_path}")
         print(f"    Reason: {failure.rule_result.reason}")
         print(f"    Changed planes: {', '.join(failure.changed_fingerprints)}")
+    for problem in result.problems:  # unparseable files / corrupt baselines: NOT checked
+        print(f"  ! {problem.kind.value} {problem.path}:{problem.line} {problem.reason}")
+print(f"checked {result.files_checked} files, {result.symbols_checked} symbols; stale: {len(result.stale)}")
 
-# Accept a reviewed symbol programmatically
+# Accept a reviewed symbol programmatically (file= is required if the name exists in several files)
 success: bool = accept(
     symbol_qualname="mypackage.module.my_function",
     reason="Refactored internal helper; public contract and exceptions unchanged.",
-    root_dir="."
+    root_dir=".",
+    file="mypackage/module.py",
 )
+
+# Record stale baselines after verifying updated docs match the code
+count: int = refresh(root_dir=".", reason="Docs updated together with the code; verified.")
+```
+
+`init()` and `accept()` raise typed errors carrying data whenever the CLI would not exit `0` (`InitIncompleteError` with an `InitResult`, `AmbiguousSymbolError` with candidates, `SourceProblemsError`). All derive from `PyDocSyncError` (has `exit_code`; not a `ValueError`). `init_report(...)` returns the details without raising.
 ```
 
 ---

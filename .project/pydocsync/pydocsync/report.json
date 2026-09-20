@@ -1,6 +1,6 @@
 {
   "fingerprint_algorithm": "sha256",
-  "pydocsync_version": "0.2.0",
+  "pydocsync_version": "0.4.0",
   "schema_version": 1,
   "symbols": {
     "SyncFailure": {
@@ -15,17 +15,77 @@
       "status": "acknowledged",
       "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
     },
-    "format_pydocsync001_report": {
-      "api": "3064f18baf95763815c8de55eeeab6968f44b245c4c7b4f228175b891ae09c4b",
-      "code": "fb1cb87b7df23b8471cccb4a026ec3dd85b5ee7c2e923ba45eabd5c5cc77ba3d",
-      "doc": "94223510e658f422644772c792f8f80078af5540e28a43474c943a1e8452bda2",
+    "_accept_command": {
+      "api": "7ae100e07026c2cea21c274362da7b06f1e4610ab579ef652dd1dbe68074e327",
+      "code": "b15a00af66bf2ef7326bbe0586f719e2482102f2a89207c524eabb911e7edf29",
+      "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
       "example": null,
-      "last_reviewed_at": "2026-09-19T17:23:50.886146+00:00",
+      "last_reviewed_at": "2026-09-20T07:14:55.118730+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
-      "review_reason": "Updated action instruction string from monorepo path to installed CLI entrypoint",
+      "review_reason": "Initial baseline creation",
       "status": "acknowledged",
-      "types": "934bead5b6cb493af1435a357aeefd3368453eb0fcc71d95951e9507fbccfbe7"
+      "types": "fd9ddbadd586b32d04701f62ff2e72a2319f8db7a27097fcf8d4c67538b83e78"
+    },
+    "_root_suffix": {
+      "api": "3628a25ee07106bb584214f8370bd91f45e67c2a9a0784c20d850bd575e29427",
+      "code": "55c32fb365bea26cdb8d6c37e7053e4519bcf70d7951aa3d5cad39279e22db7b",
+      "doc": "43066f006923f5e89346bea43426a13fd33cfacb570cb55f0a63c0884f24ea9a",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.118730+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "955fa3080102db2bd5a9894acf0c3ea3038cd8ae0b41c679cec8c966680b2257"
+    },
+    "format_ambiguity_report": {
+      "api": "10fd7a27ecb94dcf6da797f45e8e7ecdac9d9bb21705d4ed005ee8110ab8ede0",
+      "code": "64b3141f643857556ef0f25c9ea6af5ccad3d7ca644fb3a01839640794979b61",
+      "doc": "05edbbc8d9622df05641c70745ec8e22e99b2743b939872e4b5fd990854a98c4",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.118730+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "b658373becca4cf7f358657eae8e761b4c9b961b8bddda2b2fceab9473dd5487"
+    },
+    "format_problems_report": {
+      "api": "5a738841f9d1144e15eb3c7fed7f0fd650a608dbd4ba7605ab4da0ca97c8015c",
+      "code": "5da5044ec20d4c1123a909bd45770f847f190af55888878370d72d9f8fdbfb9f",
+      "doc": "f5ea6ce0bfaeec099ca1b4fa862061f585fca67de4baa31e004ee8293b62a902",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.118730+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "ea1175caa16e4e09318583d7ff386588f9b34b0be5cb9342e3426ffca94d40a1"
+    },
+    "format_pydocsync001_report": {
+      "api": "83859679fc882f85b550dc3774dea5e58dfe58c1aa134433b12885e42226648c",
+      "code": "af027e4d6e21df98e568f26b35036c6f9ce5ef4f42512d092e6e374b885ae3e9",
+      "doc": "4788729825dfdafae8b349ea7e45e2882d762239f9acd10ca33c856582ddac54",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:54.722159+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Spec 009: docstrings were updated together with the code and reviewed against it. Includes BaselineManager.__init__ and discover_python_files, whose 0.3.0 changes were never recorded in the baseline.",
+      "status": "acknowledged",
+      "types": "9e0607673910fdf2f9a1d5cc578535c07878d74a0bbe499a67e9dd5461b4bc58"
+    },
+    "format_stale_notice": {
+      "api": "62330502e6cffda7535d20e0f8c5bc842df31131f02ac3ab31b1f1ce4547f6d5",
+      "code": "0c46c68a7321c2df8cf38ac61cd06e2c0acada85083c72f23df167a4246abada",
+      "doc": "c92d9c83e1f5605513fd6e37f637d0f4c74b4f3aa739acae9ef250286472ab2e",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.118730+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "f121990c44b795d300172f0c4ee88006805f2bde21650fc3d054c3e5c71126a5"
     }
   }
 }

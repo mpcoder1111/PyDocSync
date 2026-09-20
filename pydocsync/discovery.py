@@ -21,6 +21,8 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 
+from pydocsync.problems import PyDocSyncError
+
 DEFAULT_IGNORED_DIRS: frozenset[str] = frozenset(
     {
         ".venv",
@@ -35,6 +37,14 @@ DEFAULT_IGNORED_DIRS: frozenset[str] = frozenset(
         "fixtures",
     }
 )
+
+
+class NoSourceFilesError(PyDocSyncError, ValueError):
+    """No Python source files were found to scan (exit 2).
+
+    Also a `ValueError` so callers written against the spec 008 contract (which documented
+    `ValueError` for the zero-files case) keep working.
+    """
 
 
 @dataclass(frozen=True)
@@ -57,6 +67,23 @@ class PathFilter:
         return dir_name in self.ignored_dirs
 
 
+def is_path_excluded(rel_path: Path | str, path_filter: PathFilter | None = None) -> bool:
+    """Report whether a file path lies under a directory that discovery would prune.
+
+    Lets callers validate a single explicit file (e.g. `accept --file`) against the same
+    exclusion rules as discovery without walking the tree.
+
+    Args:
+        rel_path: File path relative to the scan root.
+        path_filter: Optional PathFilter; uses default filter conventions if None.
+
+    Returns:
+        True if any parent directory component of `rel_path` is ignored.
+    """
+    flt = path_filter or PathFilter()
+    return any(flt.should_ignore_dir(part) for part in Path(rel_path).parts[:-1])
+
+
 def discover_python_files(
     root_dir: Path | str = ".",
     path_filter: PathFilter | None = None,
@@ -77,7 +104,7 @@ def discover_python_files(
     Raises:
         FileNotFoundError: If root_dir does not exist.
         NotADirectoryError: If root_dir is not a directory.
-        ValueError: If zero Python source files are found to scan.
+        NoSourceFilesError: If zero Python source files are found to scan (also a ValueError).
     """
     root = Path(root_dir).resolve()
     if not root.exists():
@@ -98,6 +125,6 @@ def discover_python_files(
                 py_files.append(full_path.relative_to(root))
 
     if not py_files:
-        raise ValueError(f"No Python source files found under '{root_dir}'.")
+        raise NoSourceFilesError(f"No Python source files found under '{root_dir}'.")
 
     return sorted(py_files)

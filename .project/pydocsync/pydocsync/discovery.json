@@ -1,8 +1,20 @@
 {
   "fingerprint_algorithm": "sha256",
-  "pydocsync_version": "0.2.0",
+  "pydocsync_version": "0.4.0",
   "schema_version": 1,
   "symbols": {
+    "NoSourceFilesError": {
+      "api": "0aa5a74eba6acf2afd4285e898570a13dac79f7b0761ff63ea8ae47316fddd81",
+      "code": "24c6955504306e3881ab9b19f3067943eb86c02603454bd1098cc3d4dfbc0308",
+      "doc": "26bc247d474514691adb85fcc093755d88b3f3b0c5e23b9a262284a22f765451",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.103591+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
     "PathFilter": {
       "api": "96e59e81946fb98e8dfbdc5a8e5d2eb56719e4f6db919a1c67594a0a08c8bf58",
       "code": "8dc4978a72df528a88d7f2c5970163753ff8e672d5918576911b5e282c96669f",
@@ -29,15 +41,27 @@
     },
     "discover_python_files": {
       "api": "dafb6f68872b2638d17b6796ea4fcc21188106d50e37ad9380ae0517a052cca3",
-      "code": "b14e86eb8a7d3a49f3a7a6178cd7323801be5d8804ef306d28d93c558998440c",
-      "doc": "ca16eb1a284705673f6c95e57db0a472e63f64ed033fea0caf27a56912a10c27",
+      "code": "c2c32c15a00c9f95c4bbd53bf2cc8531e432dfc41a92cb86401d1f17f47b8069",
+      "doc": "2d7465c4acf6409c93141f401ad99b0f81ea8d26e7219e49bf1c287ff7bc0dda",
       "example": null,
-      "last_reviewed_at": "2026-09-19T17:24:08.928713+00:00",
+      "last_reviewed_at": "2026-09-20T07:14:54.706216+00:00",
       "raise_detail": "383120d6229c77a2a33ced42d3a2f73a9834087dc9253a91845efa33029efad1",
-      "raise_type": "bb99d84da6e44d2e5378c20c5862577ef7c75ffa9bd730a8235e15b34a2fb007",
-      "review_reason": "Initial baseline for discovery module",
+      "raise_type": "0807769d06cd8b6e39f302421ac40f72d3abc14870577be7796888de26b63d57",
+      "review_reason": "Spec 009: docstrings were updated together with the code and reviewed against it. Includes BaselineManager.__init__ and discover_python_files, whose 0.3.0 changes were never recorded in the baseline.",
       "status": "acknowledged",
       "types": "da8f780f11febe4333809c1a7af761168b6246701fb06a8e9a171b74734c737e"
+    },
+    "is_path_excluded": {
+      "api": "37c39aabf7ec2c31fa7861aedb9f5ce7a7e2589a4dc16b3ee604277f75055f18",
+      "code": "7e80d3b8b558d5ffe7982f40e54a50c15285008efe11b6901e983737d3b2fa52",
+      "doc": "5815096d2651d2a51a84941b4c1a4336caf3b733b6ced618a19726502aa3b448",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.103591+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "d5173bebabfe6e2e684bd5e388656c58ec8e1c8f564b163bac75b5da69e35409"
     }
   }
 }

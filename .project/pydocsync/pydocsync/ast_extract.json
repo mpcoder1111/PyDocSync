@@ -1,6 +1,6 @@
 {
   "fingerprint_algorithm": "sha256",
-  "pydocsync_version": "0.2.0",
+  "pydocsync_version": "0.4.0",
   "schema_version": 1,
   "symbols": {
     "CanonicalASTNormalizer": {
@@ -29,25 +29,37 @@
     },
     "SymbolRepresentation": {
       "api": "0a5ff045582de92ea02fd40900b5d7a71b38d3ab2002d347eafa89f37c624a73",
-      "code": "4541df3ecc5c8456fccbfc9c1606dcf9841d0181728df6c9d38c8bdaf1795092",
-      "doc": "f2dbe2484b27d5bf856ad7548bc38fd2b2e98191615f3a22ab684958ac326549",
+      "code": "a263de684a0d02bc85bd8199a103110edb250d513cdb8dc0e3342c2d3525116f",
+      "doc": "0cc3a001569a25fb6d0eb240e7af7690eeae196af8468ef3968c4ccdb0e7dc7d",
       "example": null,
-      "last_reviewed_at": "2026-08-29T18:21:47.053179+00:00",
+      "last_reviewed_at": "2026-09-20T07:14:54.666557+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Spec 009: docstrings were updated together with the code and reviewed against it. Includes BaselineManager.__init__ and discover_python_files, whose 0.3.0 changes were never recorded in the baseline.",
+      "status": "acknowledged",
+      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+    },
+    "SymbolRepresentation.__post_init__": {
+      "api": "c762e2cac00210b9691a710af1fdf78d862c505b65c392219bc09dd3fbcca56e",
+      "code": "4b3dd6a1d614c1a1b2ed963cd2383133b98ac296269fc466e2bf4f56bfb26b46",
+      "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.062049+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
       "review_reason": "Initial baseline creation",
       "status": "acknowledged",
-      "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+      "types": "64340b988164565a1cc7d9fabcb66c01796caa9b351d4097dfbf4ac10bb365c8"
     },
     "SymbolVisitor": {
       "api": "e3354ae8669a7fa690d2f50ae378084a34c6f2408e15c19525a8a8b73235fa39",
-      "code": "09924947b440f097fa6a6b0083d413b05514b3fe9ca5ea98f48ba45f3c63302e",
+      "code": "d4245d14aa7f8e2506d99d8e3a1427e47e87779f113ee3baa77417cc82a161c5",
       "doc": "3a324fb77f776f024cf4fc91eb80eb0c7432dcc3da0326f46cc9887d76c6d9aa",
       "example": null,
-      "last_reviewed_at": "2026-08-29T18:21:47.058334+00:00",
+      "last_reviewed_at": "2026-09-20T07:14:45.704360+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
-      "review_reason": "Initial baseline creation",
+      "review_reason": "Spec 009: reviewed; class docstring still accurate. Only visit_ClassDef changed (docstring-only classes now use a pass placeholder body).",
       "status": "acknowledged",
       "types": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
     },
@@ -101,13 +113,13 @@
     },
     "SymbolVisitor.visit_ClassDef": {
       "api": "93835de1fa227596d11d640ad83a0b307b2a720b98d5bf12b07acfa11d018376",
-      "code": "6adea89c97761607fbfa26fe54b1b9accd87bcbe5f19697a2244e1b6c5b80ab6",
+      "code": "cf23049a0f18855d7bc1aa185d62aba5abf4a7a1a653219265e7ff9dd4308338",
       "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
       "example": null,
-      "last_reviewed_at": "2026-08-29T18:21:47.062637+00:00",
+      "last_reviewed_at": "2026-09-20T07:14:45.829095+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
-      "review_reason": "Initial baseline creation",
+      "review_reason": "Spec 009: class whose body was only a docstring became empty and could not be re-parsed, making the whole file unparseable; now uses a pass placeholder. No signature or contract change.",
       "status": "acknowledged",
       "types": "b22b5df90fc47b8d244ea29fc2a8daf8cf6cbeffa154d6e4b45c7eadbf13d4de"
     },
@@ -123,6 +135,18 @@
       "status": "acknowledged",
       "types": "3511d5405d8f3c097edca5720aba3a35c0a5341d3be7ff3caa35eeb20f7c730a"
     },
+    "assign_unique_keys": {
+      "api": "4fc78b2b130db96f1136c1080824a183f4cc88ccc351b04091c2f8eeced85e07",
+      "code": "946b03c94ec1ff722959077b2771e0b91ff416c2494469b5d10d14f03a22829f",
+      "doc": "56dcd0c7b8f73d47201a35db7d14eefcf54621cde3eeac2efbdc0e191698da1b",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.062049+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Initial baseline creation",
+      "status": "acknowledged",
+      "types": "8ef454475e00d33c731f7bb55ac4ce8f8b4a36ecda66dcc0fc4baaf980bb9b16"
+    },
     "canonicalize_node": {
       "api": "8a3a90fbf62965670abc4452a71397005e8094cb5e6b4e7af04c252e75a38719",
       "code": "4041a5dac13e2f103da03f5001e4b24a88ed2cc733ba3e14891758da0d2b3d85",
@@ -137,15 +161,27 @@
     },
     "extract_symbols_from_source": {
       "api": "129f56eb58b199892dd5046814f5e7d5f243f22e3e1e91cb63d4e94328dad1d1",
-      "code": "e2e2acb80a80b2c7fb86a86cda1dc6da88d447a07bf80f16970f6d746a808c17",
-      "doc": "88eed48394c9a28de2eba22e4d3d063830d8ce0f41971ddcc16ad4ef737fdc0f",
+      "code": "f3e645a973a42af836133983c1cd9da5886e1b9fed7c6e30726c85e067e7a767",
+      "doc": "c42a5c1ae712442222acbc80243a0b31d2b7cda5efaf3a8f3313809136df6b49",
       "example": null,
-      "last_reviewed_at": "2026-08-29T18:21:47.062637+00:00",
+      "last_reviewed_at": "2026-09-20T07:14:54.667154+00:00",
+      "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
+      "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
+      "review_reason": "Spec 009: docstrings were updated together with the code and reviewed against it. Includes BaselineManager.__init__ and discover_python_files, whose 0.3.0 changes were never recorded in the baseline.",
+      "status": "acknowledged",
+      "types": "76b7875ccd4e2bdf394daebd320e75aec8ca24440629e9e6910e64b49e8921b9"
+    },
+    "load_symbols": {
+      "api": "3251c624b0103281cc746246cd2b0b00a32c8a34cec71b39c21a2291286f4b0b",
+      "code": "69bb01d024eb567ecdbc90f62a2d4af1604c9f460286910bd861382b90283eb6",
+      "doc": "b19dce7184dc9eae751ac90ff466dc0404b37a00b88670d784cb1015015c7c47",
+      "example": null,
+      "last_reviewed_at": "2026-09-20T07:14:55.062049+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
       "review_reason": "Initial baseline creation",
       "status": "acknowledged",
-      "types": "76b7875ccd4e2bdf394daebd320e75aec8ca24440629e9e6910e64b49e8921b9"
+      "types": "37771d884e1f6cf6450f091c179001dd0e9cb613ac04f55ac961408aacdcfdff"
     },
     "strip_leading_docstring": {
       "api": "2b522d1159e40f526a935afd38bf4238acba29b273a9211aa487b40c5dc873df",
