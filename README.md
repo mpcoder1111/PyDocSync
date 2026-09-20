@@ -4,7 +4,7 @@
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python: >=3.10](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://www.python.org/)
-[![Status: Experimental 0.3.0](https://img.shields.io/badge/Status-Experimental_0.3.0-orange.svg)]()
+[![Status: Experimental 0.4.0](https://img.shields.io/badge/Status-Experimental_0.4.0-orange.svg)]()
 
 > **PyDocSync deterministically detects when Python implementation changes may require corresponding documentation updates or an explicit documentation review.**
 
@@ -211,7 +211,7 @@ This is intentional: **PyDocSync prefers an explicit review over silently allowi
 
 ## Installation
 
-PyDocSync 0.3.0 is an experimental release.
+PyDocSync 0.4.0 is an experimental release.
 
 Install directly from GitHub:
 
@@ -219,16 +219,16 @@ Install directly from GitHub:
 python -m pip install git+https://github.com/mpcoder1111/PyDocSync.git
 ```
 
-For the `v0.3.0` release tag:
+For the `v0.4.0` release tag:
 
 ```bash
-python -m pip install git+https://github.com/mpcoder1111/PyDocSync.git@v0.3.0
+python -m pip install git+https://github.com/mpcoder1111/PyDocSync.git@v0.4.0
 ```
 
 A release wheel is also available:
 
 ```bash
-python -m pip install pydocsync-0.3.0-py3-none-any.whl
+python -m pip install pydocsync-0.4.0-py3-none-any.whl
 ```
 
 ### Requirements
@@ -435,6 +435,17 @@ repos:
 
 The hook (`.pre-commit-hooks.yaml`) runs `pydocsync check` on the whole project whenever Python files change (`pass_filenames: false`). It has been verified by running its entry command; it has not been executed under the pre-commit tool itself.
 
+### CLI Command Reference
+
+Every command scans from `--root` (default `.`), reads `<root>/.pydocsync.json` if present, and accepts `--exclude PATTERN` (repeatable) and `--no-default-excludes`. `pydocsync --help` shows the workflow and exit codes; `pydocsync <command> --help` shows options and examples; `pydocsync --version` prints the version.
+
+| Command | What it does | Options and examples |
+|---|---|---|
+| `pydocsync check` | Compares the code with the baseline. Prints `PYDOCSYNC001` for symbols needing review, `checked N files, M symbols` on success, a notice for stale baselines, and what your exclusions removed. | `--fail-on-stale` (exit 1 on stale baselines), `--require-baseline` (exit 2 if no baseline exists). CI: `pydocsync check --fail-on-stale --require-baseline` |
+| `pydocsync init` | Baselines symbols that have no record yet (onboarding a module). Records that `check` flags are **protected**; stale records are left for `refresh`. | `--dry-run` (preview), `--force --reason "<why>"` (deliberate reset). `pydocsync init --dry-run` |
+| `pydocsync accept` | Records that you reviewed a flagged symbol and its documentation is still accurate. | `--symbol NAME --reason "<why>"` (both required), `--file PATH` (required if the name exists in several files; the `PYDOCSYNC001` hint includes it). `pydocsync accept --symbol Command.handle --reason "reviewed" --file app/commands.py` |
+| `pydocsync refresh` | Records baselines whose docstring was updated together with the code (the stale notice). Never touches flagged records or new symbols. | `--reason "<why>"` (required), `--symbol NAME`, `--file PATH`. `pydocsync refresh --reason "docs updated with the code"` |
+
 ### CLI Exit Codes
 
 | Exit Code | Classification | Condition |
@@ -483,6 +494,8 @@ PyDocSync does not need to be part of the AI model itself. It serves as a determ
                                           ▼
                                          PASS
 ```
+
+Other outcomes: exit `2` means part of the project was **not** checked (corrupt baseline, unparseable file, missing baseline with `--require-baseline`, ambiguous `accept`, invalid `--exclude`/config), so fix that first. `PASS` with a *stale-baseline notice* means docs were updated together with the code: run `pydocsync refresh --reason "..."`. Files that only look like Python (templates, generated code) are handled with `--exclude` / `.pydocsync.json`, never by deleting or editing them.
 
 ---
 
@@ -639,8 +652,9 @@ To equip your AI coding agent with native PyDocSync workflows in your own projec
 
 When installed, the AI agent will automatically:
 1. Run `pydocsync check` after editing Python functions or classes.
-2. Read the structured `PYDOCSYNC001` diagnostic output.
-3. Update docstrings / contracts when behavior changes, or run `pydocsync accept` with a clear audit reason if the documentation remains accurate.
+2. Read the diagnostic output before acting: `PYDOCSYNC001` review obligations, problems (exit `2`), and stale-baseline notices.
+3. Update docstrings / contracts when behavior changes, or run `pydocsync accept ... --file <path>` with a clear audit reason if the documentation remains accurate; run `pydocsync refresh` after documented changes.
+4. Handle non-Python files with `--exclude` / `.pydocsync.json`, without excluding real source code just to make `check` pass.
 
 ---
 

@@ -26,6 +26,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from pydocsync._version import __version__
 from pydocsync.ast_extract import SymbolRepresentation, load_symbols
 from pydocsync.baseline import BaselineManager
 from pydocsync.classifier import ASTChangeImpactClassifier
@@ -699,6 +700,68 @@ NO_DEFAULTS_HELP = (
 )
 
 
+TOP_DESCRIPTION = (
+    "PyDocSync: Representation Synchronization CLI\n\n"
+    "Deterministic code-documentation synchronization for Python. Reports (exit 1) when code changed in a way\n"
+    "that may need a documentation update or an explicit review. Run it after editing Python."
+)
+
+TOP_EPILOG = """\
+typical workflow:
+  pydocsync init                  once per project: baseline new symbols (never to "fix" a failing check)
+  pydocsync check                 after editing Python: exit 0 = in sync
+  pydocsync accept --symbol NAME --reason "why the docs are still accurate" --file PATH
+                                  after exit 1 (PYDOCSYNC001): update the docstring, or accept after review
+  pydocsync refresh --reason "why the docs match the code"
+                                  docs were updated together with the code (check prints a stale notice)
+
+exit codes:
+  0  nothing requires review
+  1  review required, symbol not found, init protected drifted records, or stale baseline with --fail-on-stale
+  2  a problem prevented a complete evaluation (corrupt baseline, unparseable file, no baseline with
+     --require-baseline), ambiguous accept, invalid --exclude pattern or .pydocsync.json, or invalid usage
+
+configuration: <root>/.pydocsync.json  {"exclude": ["templates/"], "default_excludes": true, "require_baseline": false}
+documentation: https://github.com/mpcoder1111/PyDocSync#readme
+"""
+
+CHECK_EPILOG = """\
+examples:
+  pydocsync check                                          scan the project against the baseline
+  pydocsync check --fail-on-stale --require-baseline       strict mode for CI / pre-commit
+  pydocsync check --exclude "templates/" --root ..         exclude non-Python files; scan another root
+
+exit codes: 0 in sync | 1 review required (PYDOCSYNC001) or stale with --fail-on-stale | 2 problem prevented a
+complete check (corrupt baseline, unparseable file, missing baseline with --require-baseline) or invalid usage
+"""
+
+INIT_EPILOG = """\
+examples:
+  pydocsync init                                   baseline new symbols (safe to re-run when adding a module)
+  pydocsync init --dry-run                         preview what would be baselined or protected
+  pydocsync init --force --reason "reset after audit"   deliberately overwrite protected/stale records
+
+exit codes: 0 done | 1 drifted records were protected (nothing erased) | 2 problem or invalid usage
+"""
+
+ACCEPT_EPILOG = """\
+examples:
+  pydocsync accept --symbol parse_config --reason "timeout change is internal; docs still accurate"
+  pydocsync accept --symbol Command.handle --reason "reviewed" --file app/commands.py
+
+exit codes: 0 recorded | 1 symbol not found or file excluded | 2 ambiguous name (use --file), unparseable file
+in the way, blank reason or invalid usage
+"""
+
+REFRESH_EPILOG = """\
+examples:
+  pydocsync refresh --reason "docstrings updated together with the code"
+  pydocsync refresh --reason "fee is now 8 percent" --symbol fee --file billing/fees.py
+
+exit codes: 0 done (nothing stale is a no-op) | 2 blank reason, problem or invalid usage
+"""
+
+
 def _add_scan_options(sub: argparse.ArgumentParser) -> None:
     """Add the options shared by every command that scans files."""
     sub.add_argument("--exclude", action="append", default=None, metavar="PATTERN", help=EXCLUDE_HELP)
@@ -706,10 +769,26 @@ def _add_scan_options(sub: argparse.ArgumentParser) -> None:
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="PyDocSync: Representation Synchronization CLI")
+    parser = argparse.ArgumentParser(
+        prog="pydocsync",
+        description=TOP_DESCRIPTION,
+        epilog=TOP_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--version", action="version", version=f"pydocsync {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    check_p = subparsers.add_parser("check", help="Scan working tree against baseline")
+    raw = argparse.RawDescriptionHelpFormatter
+    check_p = subparsers.add_parser(
+        "check",
+        help="Scan working tree against baseline",
+        description=(
+            "Compare the working tree with the baseline in .project/pydocsync/. Prints PYDOCSYNC001 for symbols\n"
+            "that need a documentation review, a coverage line on success, and a notice for stale baselines."
+        ),
+        epilog=CHECK_EPILOG,
+        formatter_class=raw,
+    )
     check_p.add_argument("--root", default=".", help="Root project directory")
     check_p.add_argument(
         "--fail-on-stale",
@@ -723,21 +802,48 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     _add_scan_options(check_p)
 
-    init_p = subparsers.add_parser("init", help="Baseline new symbols; protect drifted records")
+    init_p = subparsers.add_parser(
+        "init",
+        help="Baseline new symbols; protect drifted records",
+        description=(
+            "Baseline symbols that have no record yet (onboarding). Records that check currently flags are protected,\n"
+            "records whose docs were updated are left for 'refresh'. Do not use init to make a failing check pass."
+        ),
+        epilog=INIT_EPILOG,
+        formatter_class=raw,
+    )
     init_p.add_argument("--root", default=".", help="Root project directory")
     init_p.add_argument("--force", action="store_true", help="Overwrite protected/stale records (requires --reason)")
     init_p.add_argument("--reason", default=None, help="Audit reason stored in each record overwritten by --force")
     init_p.add_argument("--dry-run", action="store_true", help="Show what would happen without writing anything")
     _add_scan_options(init_p)
 
-    accept_p = subparsers.add_parser("accept", help="Acknowledge reviewed symbol change")
+    accept_p = subparsers.add_parser(
+        "accept",
+        help="Acknowledge reviewed symbol change",
+        description=(
+            "Record that you reviewed a flagged symbol and its documentation is still accurate. Requires --reason.\n"
+            "If the name exists in several files use --file (the PYDOCSYNC001 hint already includes it)."
+        ),
+        epilog=ACCEPT_EPILOG,
+        formatter_class=raw,
+    )
     accept_p.add_argument("--symbol", required=True, help="Qualified symbol name (e.g. pkg.mod.func)")
     accept_p.add_argument("--reason", required=True, help="Mandatory human/agent audit reason")
     accept_p.add_argument("--file", default=None, help="File defining the symbol (required if the name is ambiguous)")
     accept_p.add_argument("--root", default=".", help="Root project directory")
     _add_scan_options(accept_p)
 
-    refresh_p = subparsers.add_parser("refresh", help="Record baselines whose documentation was updated")
+    refresh_p = subparsers.add_parser(
+        "refresh",
+        help="Record baselines whose documentation was updated",
+        description=(
+            "Record baselines for symbols whose docstring was updated together with the code (check lists them as\n"
+            "stale). Never touches records that check flags, and never baselines new symbols."
+        ),
+        epilog=REFRESH_EPILOG,
+        formatter_class=raw,
+    )
     refresh_p.add_argument("--reason", default=None, help="Mandatory audit reason")
     refresh_p.add_argument("--symbol", default=None, help="Only refresh this qualified symbol name")
     refresh_p.add_argument("--file", default=None, help="Only refresh symbols in this file")

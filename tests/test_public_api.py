@@ -85,3 +85,33 @@ def test_python_module_cli_invocation():
     assert "check" in result.stdout
     assert "init" in result.stdout
     assert "accept" in result.stdout
+
+
+def test_cli_help_shows_every_command_with_usage_guidance():
+    """The CLI help lists all commands and says how to use them (workflow, examples, exit codes)."""
+    top = subprocess.run([sys.executable, "-m", "pydocsync", "--help"], capture_output=True, text=True)
+    assert top.returncode == 0
+    assert top.stdout.startswith("usage: pydocsync ")
+    for command in ("check", "init", "accept", "refresh"):
+        assert command in top.stdout
+    for guidance in ("typical workflow", "exit codes", ".pydocsync.json", 'pydocsync accept --symbol'):
+        assert guidance in top.stdout
+
+    examples = {
+        "check": "pydocsync check --fail-on-stale --require-baseline",
+        "init": "pydocsync init --dry-run",
+        "accept": "--file app/commands.py",
+        "refresh": "pydocsync refresh --reason",
+    }
+    for command, example in examples.items():
+        sub = subprocess.run([sys.executable, "-m", "pydocsync", command, "--help"], capture_output=True, text=True)
+        assert sub.returncode == 0
+        assert sub.stdout.startswith(f"usage: pydocsync {command}")
+        assert "examples:" in sub.stdout and example in sub.stdout, command
+
+
+def test_cli_version_flag_reports_the_package_version():
+    """`pydocsync --version` prints the installed version."""
+    res = subprocess.run([sys.executable, "-m", "pydocsync", "--version"], capture_output=True, text=True)
+    assert res.returncode == 0
+    assert res.stdout.strip() == f"pydocsync {pydocsync.__version__}"

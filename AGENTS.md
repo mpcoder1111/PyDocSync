@@ -121,6 +121,7 @@ Shipped specs are immutable historical records; new iterations require a newly n
 | I am about to… | Read first |
 |---|---|
 | Run tests after an edit | **Testing discipline** below — run the SCOPED gate |
+| Change Python under `pydocsync/` | **PyDocSync Gate** below — this repository dogfoods its own tool |
 | Write a Python tool, service, or model | `coding_standards.json` → `_task_index` for your task type |
 | Write or update a spec, plan, or arch note | `readme_standards_plan.json` |
 | Write a module README | `readme_standards_shipped.json` |
@@ -137,6 +138,26 @@ Shipped specs are immutable historical records; new iterations require a newly n
   ```
 - **Scoped Gate**: Run only tests for the specific module or rule touched (`pytest tests/test_<module>.py`).
 - **Full Suite**: Run full suite before completing any SDD feature or release.
+
+---
+
+## PyDocSync Gate (this repository uses its own tool)
+
+The baseline is committed under `.project/pydocsync/` and covers the `pydocsync/` package. After modifying Python there, once the scoped tests pass, run:
+
+```powershell
+.\.venv\Scripts\python.exe -m pydocsync check --fail-on-stale
+```
+
+Read the output before acting, then:
+
+1. **Exit 2** — something was *not* checked (corrupt baseline, unparseable file, invalid pattern/config): fix that first.
+2. **Exit 1, `PYDOCSYNC001`** — for each symbol either update its docstring (the record then shows as stale, step 3), or, only if the documentation is still 100% accurate, run the hint's command: `pydocsync accept --symbol <name> --reason "<specific reason>" --file <path>`.
+3. **Stale notice** — docstrings were updated together with the code. After verifying they match, run `pydocsync refresh --reason "<why>"`.
+4. **New module** — `pydocsync init` once (it protects flagged records and never erases drift). Never run `init` or `init --force` to make a failing check pass; `--force --reason` only with explicit owner approval.
+5. Finish at exit 0 with `--fail-on-stale`, and commit the resulting `.project/pydocsync/` changes together with the code. Never edit lockfiles by hand.
+
+The command reference and exit codes are in [README.md](README.md) and `pydocsync --help`.
 
 ---
 

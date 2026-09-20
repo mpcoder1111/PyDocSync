@@ -96,6 +96,13 @@ PASS (Exit 0)                              FAIL (Exit 1)
                            PASS                                PASS
 ```
 
+**Outcomes the diagram does not show**
+
+- **Exit 2 (problem)**: part of the project was *not* checked (corrupt baseline, unparseable file, missing baseline with `--require-baseline`, ambiguous `accept`, invalid `--exclude` or `.pydocsync.json`). Fix the reported problem first; if a file only *looks* like Python, exclude it (section 6) instead of editing it. Drift found in the same run is printed too.
+- **PASS with a stale notice** (`N symbol(s) have updated documentation not yet recorded in the baseline`): docs were updated together with the code. After verifying they match, run `pydocsync refresh --reason "<why>"` and commit the updated baseline. Skipping this leaves those symbols unguarded against later code-only changes.
+- **`init` protected drifted records** (exit 1): do not force it. Update the docstring or `accept` the symbol.
+- Discover usage at any time with `pydocsync --help` and `pydocsync <command> --help` (workflow, options, examples and exit codes).
+
 ---
 
 ## 6. CLI Commands & Lifecycle

@@ -29,13 +29,13 @@
     },
     "_build_parser": {
       "api": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "code": "48468a499e73bed2cf52c39ca618146ffe80445cbe4de0be71da6ef980279a3e",
+      "code": "0829eb01b72cff851926b84903a2fd5ffbc276ec89d9e499e31f358fb95b5c84",
       "doc": "c4b54c2d30c1f9d829e4bd53974a86fe69bb05bd3f7355410ab1fde259823fb7",
       "example": null,
-      "last_reviewed_at": "2026-09-20T08:27:29.992507+00:00",
+      "last_reviewed_at": "2026-09-20T08:39:49.635336+00:00",
       "raise_detail": "b8ee3dcf469ccc9ce13426b191018feea56f88257e62fa0251108608f36e3b9d",
       "raise_type": "3f5577943516dea7290d38e6bad72322496177873b9e3f47984329525917136f",
-      "review_reason": "Spec 010: reviewed; private helper (no public contract). Now honours the shared scan options (--exclude, --no-default-excludes) and prints exclusion visibility.",
+      "review_reason": "Help-text only: added prog name, --version, per-command descriptions/examples/exit codes. No option or behavior change.",
       "status": "acknowledged",
       "types": "501f5b06c0a7737aa0131c3fbafbf4bd07880b08bf7e0cb42a3d927d93a5a040"
     },
